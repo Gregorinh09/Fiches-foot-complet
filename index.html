@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B3B2C">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Fiches Foot">
+<title>Créateur de circuit de renforcement</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&amp;family=Barlow+Condensed:wght@700;800&amp;display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F5EF;--pn:#FFFFFF;--tx:#0E1A14;--mu:#4A5A52;--ln:#CFD9D2;--ac:#0B3B2C;--on:#FFFFFF;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0F1512;--pn:#18211C;--tx:#E8EFE9;--mu:#A3B3A9;--ln:#2D3B33;--ac:#C6F135;--on:#0B3B2C}}
+:root[data-theme="dark"]{--bg:#0F1512;--pn:#18211C;--tx:#E8EFE9;--mu:#A3B3A9;--ln:#2D3B33;--ac:#C6F135;--on:#0B3B2C}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:'Barlow',system-ui,sans-serif;font-size:16px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 20px}
+.top h1{margin:0;font-family:'Barlow Condensed',sans-serif;font-size:30px;text-transform:uppercase}
+button{font:inherit;font-weight:700;border:2px solid var(--ac);background:var(--ac);color:var(--on);border-radius:10px;padding:9px 16px;cursor:pointer;min-height:44px}
+button.g{background:transparent;color:var(--tx);border-color:var(--ln)}
+.wrap{display:flex;flex-wrap:wrap;gap:20px;padding:0 20px 24px;align-items:flex-start}
+.panel{flex:1 1 340px;max-width:460px;background:var(--pn);border:1px solid var(--ln);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.panel h2{margin:8px 0 0;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mu)}
+.f{display:flex;flex-direction:column;gap:3px;font-size:14px;color:var(--mu)}
+input,select{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--ln);border-radius:8px;padding:9px 10px;min-height:44px;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row{display:grid;grid-template-columns:28px 1fr 1fr;gap:6px 8px;padding-top:8px;border-top:1px solid var(--ln)}
+.row .n{grid-row:1/4;font-family:'Barlow Condensed',sans-serif;font-size:24px;color:var(--ac)}
+.row select:first-of-type{grid-column:2/4}
+.hint{grid-column:2/4;font-size:14px;color:var(--mu);line-height:1.3}
+.pv{flex:3 1 560px;min-width:0}
+.stage{overflow:hidden;border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.25)}
+.sheet{width:1123px;height:794px;background:#F2F5EF;display:flex;flex-direction:column;font-family:'Barlow',sans-serif;overflow:hidden;transform-origin:0 0;color:#0E1A14;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sh{background:#0B3B2C;padding:22px 36px;display:flex;justify-content:space-between;align-items:center;height:128px}
+.sh .k{font-size:15px;letter-spacing:3px;text-transform:uppercase;color:#C6F135;font-weight:600}
+.sh h1{margin:0;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:62px;line-height:1;text-transform:uppercase;color:#fff}
+.sh .s{font-size:22px;color:#D5E3DA;font-weight:600;min-height:26px}
+.ch{display:grid;grid-template-columns:auto auto;gap:8px}
+.ch div{background:#14503D;border-radius:10px;padding:8px 14px;min-width:150px}
+.ch i{display:block;font-style:normal;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#C6F135;font-weight:600}
+.ch b{font-size:20px;color:#fff}
+.gr{flex:1;min-height:0;padding:20px 36px 8px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr;gap:16px}
+.cd{background:#fff;border:2px solid #0B3B2C;border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:9px;min-height:0}
+.cd .t{display:flex;align-items:center;gap:12px}
+.cd .no{width:44px;height:44px;border-radius:50%;background:#0B3B2C;color:#C6F135;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:28px;display:flex;align-items:center;justify-content:center;flex:none}
+.cd .nm{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:26px;line-height:1.05;text-transform:uppercase}
+.cd .dz{align-self:flex-start;background:#C6F135;color:#0B3B2C;font-weight:700;font-size:20px;padding:4px 14px;border-radius:999px}
+.cd p{margin:0;font-size:17px;line-height:1.35;color:#16241D}
+.cd .mt{margin-top:auto;border-top:1px solid #C9D6CE;padding-top:8px;font-size:14px;color:#3F5148}
+.cd .mt b{color:#0B3B2C}
+.cd.empty{border:2px dashed #A9B8AE;background:transparent;align-items:center;justify-content:center;color:#5F7067;font-size:18px}
+.sf{padding:10px 36px 14px;display:flex;justify-content:space-between;font-size:15px;color:#2B3A33}
+.sf em{font-style:normal;font-weight:700;color:#0B3B2C}
+.sh{height:112px;padding:12px 36px}.sh h1{font-size:50px}.gr{padding:14px 36px 6px;gap:12px}.cd{padding:10px 14px;gap:6px}.cd .dz{font-size:18px;padding:3px 12px}.cd p{font-size:15px;line-height:1.3}.cd .mt{margin:0;border:0;padding:0}.cd .r{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pc{display:flex;gap:8px}.pc div{flex:1;background:#F4F8F1;border-radius:8px;text-align:center;font-size:12px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:#3F5148;padding-bottom:2px}.pc svg{display:block;width:100%;height:auto}
+.ph{height:124px;border:1.5px dashed #A9B8AE;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#5F7067;font-size:14px}
+.cd .no{width:calc(44px*var(--k,1));height:calc(44px*var(--k,1));font-size:calc(28px*var(--k,1))}.cd .nm{font-size:calc(26px*var(--k,1))}.cd .dz{font-size:calc(18px*var(--k,1))}.cd p{font-size:calc(15px*var(--k,1))}.cd .mt{font-size:calc(14px*var(--k,1))}
+.pc{flex:1;min-height:0}.pc div{display:flex;flex-direction:column}.pc svg{flex:1;min-height:0;height:0;width:100%}.ph{flex:1;height:auto;min-height:60px}
+.row button{grid-column:2/4;padding:6px 10px;font-size:14px;min-height:36px}
+.m3{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9;padding:12px}.m3[hidden]{display:none}.mb{background:var(--pn);border-radius:14px;padding:12px;width:min(94vw,680px);display:flex;flex-direction:column;gap:8px}.mh{display:flex;justify-content:space-between;align-items:center;gap:8px}.mf{font-size:14px;color:var(--mu)}#cv{width:100%;height:min(62vh,440px);border-radius:10px;background:#E8EFE8;display:block;touch-action:none;cursor:grab}
+.sx{position:fixed;inset:0;background:var(--bg);z-index:12;overflow:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}.sx[hidden]{display:none}.sb{max-width:560px;margin:0 auto;padding:12px 16px 28px;display:flex;flex-direction:column;gap:12px}.sxh{display:flex;justify-content:space-between;align-items:center}.bar{height:8px;background:var(--ln);border-radius:4px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width .3s}#sxc{display:flex;flex-direction:column;gap:12px}#sxc h2{margin:0;font-family:'Barlow Condensed',sans-serif;font-size:34px;text-transform:uppercase}#sxc p{margin:0;font-size:17px}.sxd{font-size:26px;font-weight:700;background:#C6F135;color:#0B3B2C;border-radius:999px;padding:6px 16px;align-self:flex-start}.sxm{color:var(--mu);font-size:15px}.big{font-size:84px;font-weight:800;text-align:center;font-family:'Barlow Condensed',sans-serif;line-height:1}.sxb{display:grid;grid-template-columns:1fr 2fr 1fr;gap:8px}.sxb button,#sxr,#sxsk{min-height:56px;font-size:18px}.sx .pc{flex:none}.sx .pc svg{height:auto;flex:none}.fin{text-align:center;padding:30px 0}
+@media print{.ph{visibility:hidden}.m3,.sx{display:none}}
+.vw{padding:0 20px 24px}.vw[hidden]{display:none}.cap{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:10px;overflow-x:auto}.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:6px}
+table.eff{border-collapse:collapse;width:100%;min-width:820px}.eff th,.eff td{border:1px solid var(--ln);padding:3px}.eff th{background:var(--ac);color:var(--on);font-size:13px}.eff td select{min-height:36px;font-size:13px;padding:3px;max-width:150px}.nmc{font-weight:700;white-space:nowrap;padding:4px 8px!important}.eff button{min-height:32px;padding:2px 8px}
+.jg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin:10px 0}.jc{background:var(--pn);border:1px solid var(--ln);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px}.jc.jt{outline:3px solid #C6F135}.jn{font-weight:700;font-size:15px}.jc small{color:var(--mu)}.vw h2{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;margin:6px 0}
+.pe{display:none}.pt{width:100%;border-collapse:collapse;font-size:13px}.pt th,.pt td{border:1px solid #777;padding:5px;text-align:left;vertical-align:top}.pt th{background:#0B3B2C;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}.pg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.pd{border:1px solid #777;border-radius:6px;padding:6px;font-size:12px}.pd ol{margin:4px 0 0 16px;padding:0}
+@media print{body.pe>*:not(#pe){display:none!important}body.pe #pe{display:block;padding:14px;color:#000;background:#fff}body.pe{background:#fff}}
+@page{size:A4 landscape;margin:0}
+@media print{:root{padding:0}body{background:#fff}.top,.panel{display:none}.wrap{padding:0;display:block}.stage{width:auto!important;height:auto!important;box-shadow:none;border-radius:0}.sheet{transform:none!important}.cd.empty{visibility:hidden}}
+</style>
+</head>
+<body>
+<header class="top"><h1>Créateur de fiches circuit</h1><nav style="display:flex;gap:6px;flex-wrap:wrap"><button id="tf">Fiches</button><button class="g" id="te">Effectif</button><button class="g" id="tj">Espace joueur</button></nav><div id="hb" style="display:flex;gap:8px"><button class="g" id="rst">Réinitialiser</button><button id="sxo">Mode séance</button><button id="prt">Imprimer / PDF</button></div></header>
+<main class="wrap" id="wr"><section class="panel" id="panel"></section><section class="pv" id="pv"><div class="stage" id="stage"><div class="sheet" id="sheet"></div></div></section></main><section id="eff" class="vw" hidden></section><section id="jr" class="vw" hidden></section><section id="bkw" class="vw" hidden></section>
+<script>
+const r=(a,b,s)=>{let o=[];for(let i=a;i<=b;i+=s)o.push(i);return o};
+const U={reps:{l:"reps",o:r(4,20,1),d:10},sec:{l:"sec",o:r(10,60,5),d:30},pas:{l:"pas",o:[6,8,10,12,15,20],d:10}};
+const SD={j:" / jambe",c:" / côté",b:" / bras",x:""};
+// [catégorie, nom, matériel, unité, par côté, explication]
+const E=[
+["Ischios","Pont fessier unipodal","Aucun","reps","j","Pied à plat, monte le bassin sans cambrer le dos."],
+["Ischios","Soulevé de terre roumain 1 jambe","Haltère 8 kg","reps","j","Dos plat, descente lente, haltère le long de la jambe."],
+["Ischios","Curl ischios mini band","Mini band","reps","x","Allongé, band aux chevilles, talons vers les fessiers."],
+["Ischios","Nordic assisté","Partenaire","reps","x","Partenaire aux chevilles, descends le plus lentement possible."],
+["Adducteurs","Copenhagen plank court","Banc","sec","c","Jambe du dessus sur le banc, corps aligné, bassin haut."],
+["Adducteurs","Fente latérale (cossack)","Haltère 8 kg","reps","c","Jambe opposée tendue, haltère contre la poitrine."],
+["Adducteurs","Squeeze adducteurs","Haltère 8 kg","reps","x","Allongé, genoux fléchis, serre l’haltère entre les genoux 5 sec."],
+["Adducteurs","Marche latérale mini band","Mini band","pas","x","Band au-dessus des genoux, pas latéraux, genoux vers l’extérieur."],
+["Chevilles","Équilibre unipodal yeux fermés","Aucun","sec","j","Debout sur une jambe, yeux fermés, cheville stable."],
+["Chevilles","Éversion de cheville mini band","Mini band","reps","j","Band autour du pied, tourne le pied vers l’extérieur."],
+["Chevilles","Sauts latéraux unipodaux","Aucun","reps","c","Saute d’un côté à l’autre, réception stable 1 sec."],
+["Genoux","Squat mini band","Mini band","reps","x","Band au-dessus des genoux, pousse les genoux vers l’extérieur."],
+["Genoux","Step-down sur banc","Banc","reps","j","Descends lentement le talon opposé vers le sol, genou aligné."],
+["Genoux","Fente arrière avec haltère","Haltère 8 kg","reps","j","Recule d’un grand pas, genou avant aligné avec le pied."],
+["Genoux","Réception de saut stabilisée","Aucun","reps","j","Saute, réceptionne sur un pied et tiens 2 sec."],
+["Fessiers","Clamshell mini band","Mini band","reps","c","Sur le côté, ouvre le genou du haut sans bouger le bassin."],
+["Fessiers","Hip thrust sur banc","Banc + haltère 8 kg","reps","x","Épaules sur le banc, haltère sur les hanches, serre les fessiers."],
+["Fessiers","Monster walk mini band","Mini band","pas","x","Band aux genoux, pas en diagonale, bassin stable."],
+["Fessiers","Planche latérale + élévation","Aucun","reps","c","Appui sur l’avant-bras, lève la jambe du haut sans plier."],
+["Gainage","Dead bug","Aucun","reps","c","Bas du dos plaqué au sol, bras et jambe opposés s’allongent."],
+["Gainage","Bird dog","Aucun","reps","c","À quatre pattes, bras et jambe opposés tendus, tiens 2 sec."],
+["Gainage","Planche avant-bras","Aucun","sec","x","Corps aligné de la tête aux talons, fessiers serrés."],
+["Gainage","Marche valise (suitcase carry)","Haltère 8 kg","pas","x","Haltère à une main, marche en gardant le tronc bien droit."],
+["Mollets","Montées sur pointes avec haltère","Haltère 8 kg","reps","j","Montée haute, descente lente de 3 sec."],
+["Mollets","Montées sur pointes genoux fléchis","Aucun","reps","x","Genoux fléchis pour cibler le soléaire, descente lente."],
+["Mollets","Relevés de pointes de pied","Aucun","reps","x","Dos au mur, talons au sol, relève les pointes (tibias)."],
+["Mollets","Sauts pogo","Aucun","reps","x","Petits rebonds rapides sur l’avant du pied, genoux presque tendus."],
+["Explosivité","Squat goblet avec haltère","Haltère 8 kg","reps","x","Haltère contre la poitrine, descente contrôlée, remontée rapide."],
+["Explosivité","Squat jump","Aucun","reps","x","Saute à la verticale, réception souple et stable."],
+["Explosivité","Fente sautée alternée","Aucun","reps","j","Change de jambe en l’air, réception contrôlée."],
+["Épaules","Pompes","Aucun","reps","x","Corps gainé, poitrine vers le sol. Mains sur le banc pour faciliter."],
+["Épaules","Rowing haltère appui banc","Haltère 8 kg + banc","reps","b","Un genou et une main sur le banc, tire le coude vers la hanche."],
+["Épaules","Rotation externe mini band","Mini band","reps","b","Coude collé au corps, ouvre l’avant-bras vers l’extérieur."],
+["Épaules","Face pull mini band","Mini band","reps","x","Tire le band vers le visage, coudes hauts."],
+["Ischios","Pont fessier talons sur banc","Banc","reps","x","Talons sur le banc, monte le bassin en poussant dans les talons."],
+["Ischios","Good morning avec haltère","Haltère 8 kg","reps","x","Haltère contre la poitrine, bascule le buste dos plat, genoux souples."],
+["Ischios","Pont fessier isométrique","Aucun","sec","x","Bassin haut, serre fessiers et ischios sans cambrer le dos."],
+["Adducteurs","Glissé d’adducteur","Serviette","reps","c","Pied sur une serviette, glisse la jambe sur le côté puis ramène-la."],
+["Adducteurs","Pont fessier + squeeze","Haltère 8 kg","reps","x","Pont fessier avec l’haltère serrée entre les genoux."],
+["Adducteurs","Fente latérale mini band","Mini band","reps","c","Band aux cuisses, grand pas latéral, jambe d’appui fléchie."],
+["Chevilles","Équilibre unipodal jambe libre active","Aucun","sec","j","Sur une jambe, balance l’autre devant puis derrière, appui stable."],
+["Chevilles","Inversion de cheville mini band","Mini band","reps","j","Band autour du pied, tourne la plante vers l’intérieur."],
+["Genoux","Squat bulgare (split squat)","Banc","reps","j","Pied arrière sur le banc, descends droit, genou avant aligné."],
+["Genoux","Squat unipodal vers banc","Banc","reps","j","Assis-debout sur une jambe, descente contrôlée jusqu’au banc."],
+["Genoux","Fente marchée avec haltère","Haltère 8 kg","pas","x","Grandes fentes en avançant, buste droit, haltère à une main."],
+["Genoux","Squat isométrique au mur","Aucun","sec","x","Dos au mur, cuisses parallèles au sol, genoux alignés avec les pieds."],
+["Fessiers","Hip thrust unipodal sur banc","Banc","reps","j","Épaules sur le banc, une jambe tendue, pousse avec l’autre."],
+["Fessiers","Fire hydrant mini band","Mini band","reps","c","À quatre pattes, band aux genoux, ouvre le genou sur le côté."],
+["Fessiers","Abduction allongé mini band","Mini band","reps","c","Sur le côté, band aux chevilles, monte la jambe sans pivoter."],
+["Fessiers","Pont fessier mini band","Mini band","reps","x","Band aux genoux, monte le bassin en poussant les genoux vers l’extérieur."],
+["Gainage","Planche latérale","Aucun","sec","c","Appui sur l’avant-bras, corps aligné, hanche haute."],
+["Gainage","Rotation russe avec haltère","Haltère 8 kg","reps","x","Assis, buste incliné, passe l’haltère d’un côté à l’autre."],
+["Gainage","Planche touche-épaule","Aucun","reps","c","En planche haute, touche l’épaule opposée sans balancer le bassin."],
+["Gainage","Relevé de jambes allongé","Aucun","reps","x","Dos plaqué au sol, jambes tendues qui montent et descendent lentement."],
+["Mollets","Marche sur pointes","Aucun","pas","x","Marche sur la pointe des pieds, chevilles hautes, tronc droit."],
+["Mollets","Marche sur talons","Aucun","pas","x","Marche sur les talons, pointes de pied relevées (tibias)."],
+["Explosivité","Saut en longueur sur place","Aucun","reps","x","Saute vers l’avant, réception stable tenue 2 sec."],
+["Explosivité","Sauts groupés","Aucun","reps","x","Saute en montant les genoux vers la poitrine, réception souple."],
+["Explosivité","Sauts patineur","Aucun","reps","x","Saute d’un pied sur l’autre latéralement, stabilise chaque réception."],
+["Explosivité","Montées de genoux rapides","Aucun","sec","x","Course sur place, genoux hauts, rythme rapide."],
+["Épaules","Pompes mains sur banc","Banc","reps","x","Mains sur le banc, corps gainé, poitrine vers le banc."],
+["Épaules","Développé épaule avec haltère","Haltère 8 kg","reps","b","Debout, pousse l’haltère au-dessus de la tête, tronc gainé."],
+["Épaules","Y-T-W allongé","Aucun","reps","x","Sur le ventre, bras en Y, T puis W, omoplates serrées."],
+["Hanches","Mobilité 90/90","Aucun","reps","c","Assis, jambes à 90°, bascule d’une hanche à l’autre."],
+["Hanches","Fente basse avec rotation du buste","Aucun","reps","c","En fente basse, ouvre le buste vers la jambe avant, regard suit la main."],
+["Hanches","Étirement actif des fléchisseurs","Aucun","sec","c","Genou au sol, serre le fessier, pousse le bassin vers l’avant."],
+["Hanches","Cercles de hanche à quatre pattes","Aucun","reps","c","Dessine de grands cercles contrôlés avec le genou, dos stable."],
+["Bosu","Équilibre unipodal sur bosu","Bosu","sec","j","Debout sur le dôme, genou souple, bassin stable."],
+["Bosu","Équilibre bosu yeux fermés","Bosu","sec","j","Même position, yeux fermés pour solliciter la cheville."],
+["Bosu","Équilibre bosu avec haltère","Bosu + haltère 8 kg","sec","j","Sur une jambe, passe l’haltère d’une main à l’autre."],
+["Bosu","Squat sur bosu","Bosu","reps","x","Pieds sur le dôme, descends contrôlé, genoux alignés."],
+["Bosu","Squat partiel unipodal sur bosu","Bosu","reps","j","Descente partielle sur une jambe, genou aligné avec le pied."],
+["Bosu","Fente arrière pied avant sur bosu","Bosu","reps","j","Pied avant sur le dôme, recule l’autre jambe en contrôlant le genou."],
+["Bosu","Pont fessier pieds sur bosu","Bosu","reps","x","Pieds sur le dôme, monte le bassin sans que le bosu bascule."],
+["Bosu","Planche avant-bras sur bosu","Bosu","sec","x","Avant-bras sur le dôme, corps aligné, fessiers serrés."],
+["Bosu","Pompes mains sur bosu","Bosu","reps","x","Mains sur le dôme, corps gainé, contrôle l’instabilité."],
+["Bosu","Réception de saut sur bosu","Bosu","reps","j","Saute depuis le sol, réceptionne sur le dôme sur un pied, tiens 2 sec."],
+["Step","Montée sur step (step-up)","Step","reps","j","Monte en poussant sur la jambe d’appui, redescends lentement."],
+["Step","Step-up avec haltère","Step + haltère 8 kg","reps","j","Haltère à une main, monte sans pencher le buste."],
+["Step","Descente latérale du step","Step","reps","j","Debout sur le step, descends l’autre pied vers le sol en contrôlant le genou."],
+["Step","Fente avant pied sur step","Step","reps","j","Pied avant sur le step, descends droit, genou aligné."],
+["Step","Montées sur pointes talon dans le vide","Step","reps","j","Talon hors du step, montée haute, descente lente de 3 sec."],
+["Step","Descente excentrique d’Achille","Step","reps","j","Monte sur deux pieds, descends sur un pied en 4 sec."],
+["Step","Saut sur step","Step","reps","x","Saute sur le step, réception souple, redescends en marchant."],
+["Step","Pas alternés rapides sur step","Step","sec","x","Alterne rapidement les pieds sur le step, rythme soutenu."],
+["Abdos","Crunch","Aucun","reps","x","Dos au sol, décolle les épaules en expirant, nuque détendue."],
+["Abdos","Crunch inversé","Aucun","reps","x","Genoux fléchis, ramène le bassin vers la poitrine sans élan."],
+["Abdos","Crunch vélo (bicycle)","Aucun","reps","c","Coude vers le genou opposé en alternance, rythme contrôlé."],
+["Abdos","Toe touches","Aucun","reps","x","Jambes verticales, monte les mains vers les pieds, redescends lentement."],
+["Abdos","V-up","Aucun","reps","x","Allongé, monte buste et jambes tendus pour former un V."],
+["Abdos","Hollow body hold","Aucun","sec","x","Dos plaqué au sol, bras et jambes tendus décollés du sol."],
+["Abdos","Ciseaux (flutter kicks)","Aucun","sec","x","Jambes tendues décollées, petits battements alternés, bas du dos plaqué."],
+["Abdos","Mountain climbers","Aucun","sec","x","En planche haute, ramène les genoux vers la poitrine en alternance."],
+["Abdos","Planche araignée (spider)","Aucun","reps","c","En planche haute, amène le genou vers le coude du même côté."],
+["Abdos","Planche avec jambe levée","Aucun","reps","c","Planche sur les avant-bras, lève une jambe sans bouger le bassin."],
+["Abdos","Planche dynamique bas-haut","Aucun","reps","x","Passe de l’avant-bras à la main en alternant le bras de départ."],
+["Abdos","Planche latérale hip dips","Aucun","reps","c","Planche latérale sur l’avant-bras, descends et remonte la hanche."],
+["Abdos","Flexion latérale avec haltère","Haltère 8 kg","reps","c","Debout, haltère à une main, incline le buste sur le côté sans tourner."],
+["Abdos","Bûcheron avec haltère (wood chop)","Haltère 8 kg","reps","c","Haltère à deux mains, monte en diagonale, pivote depuis le tronc."],
+["Abdos","Dead bug avec haltère","Haltère 8 kg","reps","x","Haltère bras tendus au-dessus de la poitrine, allonge les jambes en alternance."],
+["Abdos","Relevé de genoux assis sur banc","Banc","reps","x","Assis au bord du banc, mains en appui, ramène les genoux vers la poitrine."],
+["Abdos","Crunch sur bosu","Bosu","reps","x","Dos sur le dôme, bas du dos soutenu, monte le buste sans tirer sur la nuque."],
+["Explosivité","Jump squat avec haltère","Haltère 8 kg","reps","x","Haltère contre la poitrine, descends en squat puis saute le plus haut possible."],
+["Explosivité","Squat jump avec mini band","Mini band","reps","x","Band au-dessus des genoux, saute en gardant les genoux vers l’extérieur."],
+["Explosivité","Drop jump depuis step","Step","reps","x","Descends du step, rebondis aussitôt le plus haut possible, réception stable."],
+["Explosivité","Bondissements alternés (bounding)","Aucun","pas","x","Grandes foulées sautées, pousse fort et reste en l’air le plus longtemps possible."],
+["Mollets","Maintien sur pointes (isométrique)","Aucun","sec","x","Monte sur les pointes et tiens la position haute, chevilles bien alignées."],
+["Adducteurs","Fente latérale lente (excentrique)","Aucun","reps","c","Descends en 4 sec dans la fente latérale, remonte normalement."],
+["Abdos","Relevé de jambes allongé, descente lente (excentrique)","Aucun","reps","x","Jambes à la verticale, redescends en 4 sec sans cambrer le dos."],
+["Épaules","Pompes descente lente (excentrique)","Aucun","reps","x","Descends en 4 sec, corps gainé, remonte normalement."],
+["Genoux","Fente isométrique (maintien bas)","Aucun","sec","j","Tiens la fente basse, genou avant aligné avec le pied."]
+];
+const def=()=>({t:"Circuit de Renforcement",p:"Ischios et fessiers",club:"",dur:"8 min",rec:"Enchaîner",qd:"Avant séance",
+sl:[[0,8],[1,8],[2,10],[3,5],[16,10],[17,10]].map(a=>({e:a[0],v:a[1],s:2}))});
+let S=(()=>{try{const x=JSON.parse(localStorage.getItem("circuit-fiche"));if(x&&Array.isArray(x.sl)&&x.sl.length===6)return x}catch(e){}return def()})();
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function fld(l,el){const d=document.createElement("label");d.className="f";d.append(l,el);return d}
+function sel(list,val,cb,al){const s=document.createElement("select");s.setAttribute("aria-label",al);s.innerHTML=list.map(x=>`<option>${x}</option>`).join("");s.value=val;s.onchange=()=>cb(s.value);return s}
+function inp(l,k){const i=document.createElement("input");i.value=S[k];i.oninput=()=>{S[k]=i.value;render()};return fld(l,i)}
+function row(i){
+const c=S.sl[i],d=document.createElement("div");d.className="row";
+const ex=document.createElement("select");ex.setAttribute("aria-label","Exercice "+(i+1));
+let h='<option value="-1">— Aucun —</option>';const gs={};
+E.forEach((x,k)=>{const gf=S.flt&&S.flt!="Tous",rf=S.rg&&S.rg!="Tous",R=RG(x);if(k!=c.e&&((gf&&!TG(x).includes(S.flt))||(rf&&!R.includes(S.rg))))return;const key=gf?R[0]:x[0];(gs[key]=gs[key]||[]).push(`<option value="${k}">${x[1]}</option>`)});
+for(const k of(S.flt&&S.flt!="Tous"?["Isométrique","Concentrique","Excentrique","Plyométrique"].filter(z=>gs[z]):Object.keys(gs)))h+=`<optgroup label="${k}">${gs[k].join("")}</optgroup>`;
+ex.innerHTML=h;ex.value=c.e;
+const v=document.createElement("select"),s=document.createElement("select"),hi=document.createElement("div");
+v.setAttribute("aria-label","Répétitions ou durée "+(i+1));s.setAttribute("aria-label","Séries "+(i+1));hi.className="hint";
+function fill(){
+const x=c.e>=0?E[c.e]:null,u=x?U[x[3]]:null;
+v.innerHTML=u?u.o.map(n=>`<option value="${n}">${n} ${u.l}${SD[x[4]]}</option>`).join(""):"<option>–</option>";
+if(u)v.value=c.v;
+s.innerHTML=r(1,5,1).map(n=>`<option value="${n}">${n} série${n>1?"s":""}</option>`).join("");s.value=c.s;
+v.disabled=s.disabled=!u;hi.textContent=x?x[5]:"";}
+ex.onchange=()=>{c.e=+ex.value;if(c.e>=0)c.v=U[E[c.e][3]].d;fill();render()};
+v.onchange=()=>{c.v=+v.value;render()};s.onchange=()=>{c.s=+s.value;render()};
+fill();
+const n=document.createElement("b");n.className="n";n.textContent=i+1;
+const btn3=document.createElement("button");btn3.className="g";btn3.textContent="Voir en 3D";btn3.onclick=()=>open3d(c.e);d.append(n,ex,v,s,hi,btn3);return d}
+function panel(){
+const p=$("panel");p.innerHTML="";
+p.append(bk(),inp("Titre","t"),inp("Programme / sous-titre","p"),inp("Club ou équipe","club"));
+const t=document.createElement("div");t.className="two";
+t.append(fld("Durée",sel(["5 min","6 min","7 min","8 min","9 min","10 min"],S.dur,v=>{S.dur=v;render()},"Durée")),
+fld("Récupération",sel(["Enchaîner","15 sec","30 sec","45 sec","1 min"],S.rec,v=>{S.rec=v;render()},"Récupération")));
+p.append(t,fld("Moment",sel(["Avant séance","Après séance","Veille de match","Jour de match"],S.qd,v=>{S.qd=v;render()},"Moment")),fld("Style des schémas",sel(["Séparé","Superposé"],S.sty||"Séparé",v=>{S.sty=v;render()},"Style des schémas")));
+const fs=document.createElement("select"),op=a=>a.map(x=>`<option>${x}</option>`).join("");fs.setAttribute("aria-label","Filtrer les exercices");fs.innerHTML="<option>Tous</option><optgroup label='Groupe musculaire'>"+op(["Quadriceps","Ischio-jambiers","Adducteurs","Fessiers","Mollets","Abdos","Lombaires","Haut du corps"])+"</optgroup><optgroup label='Articulation'>"+op(["Cheville","Genou","Hanche","Épaule"])+"</optgroup><optgroup label='Spécifique'>"+op(["Explosivité"])+"</optgroup>";fs.value=S.flt||"Tous";fs.onchange=()=>{S.flt=fs.value;panel();render()};const rs=document.createElement("select");rs.setAttribute("aria-label","Régime de contraction");rs.innerHTML=op(["Tous","Isométrique","Concentrique","Excentrique","Plyométrique"]);rs.value=S.rg||"Tous";rs.onchange=()=>{S.rg=rs.value;panel();render()};p.append(fld("Filtrer les exercices par",fs),fld("Régime de contraction",rs));
+const h=document.createElement("h2");h.textContent="Exercices (jusqu’à 6)";p.append(h);
+for(let i=0;i<6;i++)p.append(row(i))}
+function card(i,j,sp){
+const c=S.sl[i];
+if(c.e<0)return `<div class="cd empty">Exercice ${i+1} : à choisir</div>`;
+const x=E[c.e],u=U[x[3]];
+return `<div class="cd" style="grid-column:span ${sp}"><div class="t"><div class="no">${j+1}</div><div class="nm">${esc(x[1])}</div></div>
+${pic(x[1])}<div class="r"><div class="dz">${c.s} × ${c.v} ${u.l}${SD[x[4]]}</div><div class="mt"><b>Matériel :</b> ${esc(x[2])}</div></div><p>${esc(x[5])}</p></div>`}
+// ---- Pictogrammes : figure de profil (face à droite), angles en degrés (0=droite, 90=bas, -90=haut)
+const R=Math.PI/180,AD=(p,a,l)=>[p[0]+l*Math.cos(a*R),p[1]+l*Math.sin(a*R)],AN=(a,b)=>Math.atan2(b[1]-a[1],b[0]-a[0])/R;
+function lb(P,s,l1,l2){let m;if(s.length==3){const T=[s[0],s[1]],d=Math.min(Math.hypot(T[0]-P[0],T[1]-P[1]),l1+l2-.01),A=Math.acos(Math.max(-1,Math.min(1,(l1*l1+d*d-l2*l2)/(2*l1*d))))/R;m=AD(P,AN(P,T)+s[2]*A,l1);return[m,AD(m,AN(m,T),l2)]}m=AD(P,s[0],l1);return[m,AD(m,s[1],l2)]}
+const pl=(a,c,w)=>`<polyline points="${a.map(p=>p[0].toFixed(1)+","+p[1].toFixed(1)).join(" ")}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const jt=p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.3" fill="#C6F135" stroke="#0B3B2C" stroke-width="1.1"/>`;
+const arw=ar=>{if(!ar)return"";const a=ar[0],b=ar[1];if(Math.hypot(b[0]-a[0],b[1]-a[1])<4)return"";const u=AN(a,b);return pl([a,b],"#F26A2E",2.8)+pl([AD(b,u+150,6),b,AD(b,u-150,6)],"#F26A2E",2.8)};
+function jn(q,f){const P=q.p,t=q.t??-90,sh=AD(P,t,20);
+if(f){const nv=AD([0,0],t+90,1),w=(c,a)=>[c[0]+nv[0]*a,c[1]+nv[1]*a],h0=w(P,-5),h1=w(P,5),A=lb(w(sh,-10),q.a||[95,95],14,13),B=lb(w(sh,10),q.b||[85,85],14,13),L=lb(h0,q.l||[90,90],19,19),R=lb(h1,q.r||[90,90],19,19);return[A[1],B[1],L[0],R[0],L[1],R[1],P,AD(sh,t,10)]}
+const A=lb(sh,q.A,14,13),B=q.B?lb(sh,q.B,14,13):A,L=lb(P,q.L,19,19),M=q.M?lb(P,q.M,19,19):L;return[A[1],B[1],L[0],M[0],L[1],M[1],P,AD(sh,q.t+(q.hd||0),9.5)]}
+const ol="#263238",SK="#EDB98F",BL="#2E86DE",GR="#8A929A",WH="#F5F5F5",HR="#5B3A29";
+const sg=(a,c,w)=>pl(a,ol,w+1.8)+pl(a,c,w)+`<g opacity=".4">${pl(a.map(p=>[p[0]-w*.17,p[1]-w*.2]),"#fff",w*.28)}</g><g opacity=".16">${pl(a.map(p=>[p[0]+w*.2,p[1]+w*.24]),"#000",w*.3)}</g>`,cc=(p,r,c,s)=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r}" fill="${c}" stroke="${ol}" stroke-width="${s??.9}"/>`,dt=ps=>ps.map(p=>cc(p,1.5,"#fff",.6)).join(""),
+leg=(h,k,a,fa)=>sg([h,k],GR,7)+sg([k,a],SK,4.6)+sg([a,AD(a,fa,8)],WH,4.4),arm=(s,e,w)=>sg([s,e],BL,6)+sg([e,w],SK,4.2),
+head=(sh,t,hd,fr)=>{const h=AD(sh,t+hd,9.5),f=t+90;return fr?cc(AD(h,t+hd,1.4),6.3,HR)+cc(AD(h,t+hd,-.8),5.3,SK,.7):cc(AD(AD(h,f+180,1.4),t+hd,1.2),6.3,HR)+cc(AD(AD(h,f,1.2),t+hd,-.4),5.2,SK,.7)+cc(AD(AD(h,f,4),t+hd,.8),.8,ol,0)};
+function svg(q,eq,ar){
+const P=q.p,sh=AD(P,q.t,20),hd=AD(sh,q.t+(q.hd||0),9.5),A=lb(sh,q.A,14,13),B=q.B?lb(sh,q.B,14,13):A,L=lb(P,q.L,19,19),M=q.M?lb(P,q.M,19,19):L;
+const df=k=>AN(k[0],k[1])-90,fn=q.f??df(L),ff=q.g??(q.M?df(M):fn);
+const bk=eq.filter(e=>["bench","bosu","step"].includes(e[0])),fr=eq.filter(e=>!bk.includes(e));
+let o='<line x1="2" y1="76.5" x2="118" y2="76.5" stroke="#9DB0A3" stroke-width="1.2"/>';
+bk.forEach(e=>{
+if(e[0]=="bench")o+=`<rect x="${e[1]}" y="${e[3]}" width="${e[2]-e[1]}" height="4" rx="1" fill="#B08B5E"/><rect x="${e[1]+2}" y="${e[3]+4}" width="2.5" height="${76-e[3]-4}" fill="#7A5F3D"/><rect x="${e[2]-4.5}" y="${e[3]+4}" width="2.5" height="${76-e[3]-4}" fill="#7A5F3D"/>`;
+if(e[0]=="bosu")o+=`<path d="M${e[1]-e[2]/2},76Q${e[1]},${76-2*e[3]} ${e[1]+e[2]/2},76Z" fill="#3C78C2"/><rect x="${e[1]-e[2]/2}" y="74.4" width="${e[2]}" height="1.8" fill="#1C2F4A"/>`;
+if(e[0]=="step")o+=`<rect x="${e[1]}" y="${e[3]}" width="${e[2]-e[1]}" height="${76-e[3]}" fill="#CDD3CF" stroke="#7C8781" stroke-width="1"/>`});
+o+=`<ellipse cx="${P[0].toFixed(1)}" cy="76.5" rx="24" ry="2.6" fill="#000" opacity=".16"/><g opacity=".8">`+arm(sh,B[0],B[1])+leg(P,M[0],M[1],ff)+"</g>"+sg([P,sh],BL,10)+cc(P,4.8,GR)+leg(P,L[0],L[1],fn)+arm(sh,A[0],A[1])+head(sh,q.t,q.hd||0)+dt([L[0],L[1],A[0],A[1],sh,P]);
+fr.forEach(e=>{const c=A[1];
+if(e[0]=="db"){const a=e[1],p1=AD(c,a,6.5),p2=AD(c,a,-6.5);o+=pl([p1,p2],"#555",1.8)+pl([AD(p1,a+90,4.8),AD(p1,a-90,4.8)],"#1F2A24",3.6)+pl([AD(p2,a+90,4.8),AD(p2,a-90,4.8)],"#1F2A24",3.6)+`<text x="${(c[0]>88?c[0]-19:c[0]+9).toFixed(1)}" y="${(c[1]-5).toFixed(1)}" font-size="6.5" font-weight="700" fill="#1F2A24">8 kg</text>`}
+if(e[0]=="dbe")o+=`<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="5" fill="#2B2F2D"/><circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="2" fill="#8A948E"/><text x="${(c[0]>88?c[0]-18:c[0]+7).toFixed(1)}" y="${(c[1]+2.5).toFixed(1)}" font-size="6.5" font-weight="700" fill="#1F2A24">8 kg</text>`;
+if(e[0]=="wall")o+=`<rect x="${e[1]}" y="-10" width="3" height="86" fill="#D5DAD6"/>`;
+if(e[0]=="pt")o+=`<path d="M${e[1]-4},${e[2]-3}h10v6h-10z" fill="#9A8272"/>`+pl([[e[1]-2,e[2]],[e[1]-13,e[2]-14]],"#9A8272",4)+`<text x="${e[1]-27}" y="${e[2]-18}" font-size="6" font-weight="700" fill="#5A4A3C">Partenaire</text>`;
+if(e[0]=="bl")o+=pl([c,[e[1],e[2]]],"#F07818",2);
+if(e[0]=="dbk")o+=`<circle cx="${L[0][0].toFixed(1)}" cy="${L[0][1].toFixed(1)}" r="4" fill="#2B2F2D"/><text x="${(L[0][0]>88?L[0][0]-20:L[0][0]+6).toFixed(1)}" y="${(L[0][1]-3).toFixed(1)}" font-size="6.5" font-weight="700" fill="#1F2A24">8 kg</text>`;
+if(e[0]=="band"){const th=e[1]=="t",a0=th?P:L[0],a1=th?L[0]:L[1],a=AN(a0,a1),p=[a0[0]+(a1[0]-a0[0])*e[2],a0[1]+(a1[1]-a0[1])*e[2]];o+=pl([AD(p,a+90,5.5),AD(p,a-90,5.5)],"#F07818",2.6)}});
+o+=arw(ar);
+return `<svg viewBox="0 -10 120 86" role="img" aria-label="Positions de départ et d’arrivée">${o}</svg>`}
+function svgF(q,eq,ar){
+const P=q.p,t=q.t??-90,sh=AD(P,t,20),nv=AD([0,0],t+90,1),w=(c,a)=>[c[0]+nv[0]*a,c[1]+nv[1]*a],s0=w(sh,-10),s1=w(sh,10),h0=w(P,-5),h1=w(P,5);
+const a=lb(s0,q.a||[95,95],14,13),b=lb(s1,q.b||[85,85],14,13),l=lb(h0,q.l||[90,90],19,19),r=lb(h1,q.r||[90,90],19,19),hd=AD(sh,t,10);
+let o=svg({p:[900,900],t:-90,A:[90,90],L:[90,90]},eq.filter(e=>["bench","bosu","step"].includes(e[0]))).replace(/^<svg[^>]*>|<\/svg>$/g,"");
+o+=`<ellipse cx="${P[0].toFixed(1)}" cy="76.5" rx="22" ry="2.6" fill="#000" opacity=".16"/>`+sg([P,sh],BL,10)+sg([s0,s1],BL,7)+sg([h0,h1],GR,6)+leg(h0,l[0],l[1],q.fl??180)+leg(h1,r[0],r[1],q.fr??0)+arm(s0,a[0],a[1])+arm(s1,b[0],b[1])+head(sh,t,0,1)+dt([l[0],l[1],r[0],r[1],a[0],a[1],b[0],b[1],s0,s1,h0,h1]);
+const pt={l:l[1],r:r[1],a:a[1],b:b[1]};
+eq.forEach(e=>{
+if(e[0]=="dbF"){const c=pt[e[1]],g=e[2],p1=AD(c,g,6.5),p2=AD(c,g,-6.5);o+=pl([p1,p2],"#555",1.8)+pl([AD(p1,g+90,4.8),AD(p1,g-90,4.8)],"#1F2A24",3.6)+pl([AD(p2,g+90,4.8),AD(p2,g-90,4.8)],"#1F2A24",3.6)+`<text x="${(c[0]+9).toFixed(1)}" y="${(c[1]-5).toFixed(1)}" font-size="6.5" font-weight="700" fill="#1F2A24">8 kg</text>`}
+if(e[0]=="bandF")o+=pl({k:[l[0],r[0]],a:[l[1],r[1]],w:[a[1],b[1]]}[e[1]],"#F07818",2.4);
+if(e[0]=="blF")o+=pl([pt[e[3]],[e[1],e[2]]],"#F07818",2)});
+o+=arw(ar);
+return `<svg viewBox="0 -10 120 86" role="img" aria-label="Positions de départ et d’arrivée">${o}</svg>`}
+const PL={p:[52.7,63.2],t:-15,hd:5,A:[90,0],L:[167,167],f:30},PB={p:[52.4,53.2],t:-12,hd:5,A:[90,0],L:[150,150],f:30};
+const Q={
+"Crunch":[{p:[70,73],t:180,A:[-80,130],L:[88,73,-1],f:0},{p:[70,73],t:205,A:[-100,125],L:[88,73,-1],f:0},[]],
+"Hollow body hold":[{p:[70,73],t:180,A:[180,180],L:[0,0],f:-35},{p:[70,73],t:200,A:[195,195],L:[-22,-22],f:-10},[]],
+"Mountain climbers":[{p:[63.2,53.8],t:-20,hd:10,A:[90,90],L:[150,150],f:20},{p:[63.2,53.8],t:-20,hd:10,A:[90,90],L:[40,150],M:[150,150],f:-10,g:20},[]],
+"Dead bug avec haltère":[{p:[70,73],t:180,A:[-90,-90],L:[-90,0]},{p:[70,73],t:180,A:[190,190],L:[-12,-12],M:[-90,0]},[["db",0]]],
+"Pont fessier unipodal":[{p:[70,73],t:180,A:[0,0],L:[86,73,-1],M:[-65,-65],f:0},{p:[66,59],t:136,hd:40,A:[0,0],L:[86,73,-1],M:[-15,-15],f:0},[]],
+"Hip thrust sur banc":[{p:[46,67.5],t:208,hd:-28,A:[46,63,1],L:[66,73.6,-1],f:0},{p:[47,55],t:173,hd:7,A:[47,50,1],L:[66,73.6,-1],f:0},[["bench",6,34,61],["dbe"]]],
+"Squat goblet avec haltère":[{p:[54,36],t:-90,A:[62,22,1],L:[56,73,-1],f:0},{p:[44,56],t:-65,A:[61,44,1],L:[56,73,-1],f:0},[["db",90]]],
+"Squat mini band":[{p:[54,36],t:-90,A:[66,19,1],L:[56,73,-1],f:0},{p:[44,56],t:-65,A:[64,40,1],L:[56,73,-1],f:0},[["band","t",0.78]]],
+"Fente arrière avec haltère":[{p:[55,36],t:-90,A:[90,90],L:[55,73,-1],f:0},{p:[46,52],t:-90,A:[90,90],L:[60,73,-1],M:[28,72,-1],f:0,g:40},[["dbe"]]],
+"Soulevé de terre roumain 1 jambe":[{p:[56,36],t:-90,A:[90,90],L:[56,73,-1],f:0},{p:[58,40],t:-8,hd:15,A:[90,90],L:[56,73,-1],M:[188,188],f:0},[["dbe"]]],
+"Montée sur step (step-up)":[{p:[62,36],t:-90,A:[95,95],L:[74,59,-1],M:[52,73,-1],f:0,g:0},{p:[74,25],t:-90,A:[95,95],L:[74,59,-1],M:[5,90],f:0},[["step",62,94,62]]],
+"Équilibre unipodal sur bosu":[{p:[60,26],t:-90,A:[95,95],L:[55,63.5,-1],M:[66,63.7,-1],f:0,g:0},{p:[60,26],t:-90,A:[35,10],L:[57,63.5,-1],M:[10,95],f:0},[["bosu",60,44,10]]],
+"Squat sur bosu":[{p:[60,26],t:-90,A:[10,0],L:[55,63.5,-1],M:[66,63.7,-1],f:0,g:0},{p:[50,47],t:-68,A:[10,0],L:[58,63.5,-1],M:[63,63.7,-1],f:0,g:0},[["bosu",60,44,10]]],
+"Pompes":[{p:[50,50],t:-20,hd:5,A:[85,85],L:[150,150],f:30},{p:[50,62],t:-10,hd:5,A:[72,71,1],L:[165,165],f:30},[]],
+"Pont fessier talons sur banc":[{p:[70,73],t:180,A:[0,0],L:[92,58,-1],f:-80},{p:[68,59],t:136,hd:40,A:[0,0],L:[92,58,-1],f:-80},[["bench",88,118,61]]],
+"Pont fessier isométrique":[{p:[70,73],t:180,A:[0,0],L:[86,73,-1],f:0},{p:[66,59],t:136,hd:40,A:[0,0],L:[86,73,-1],f:0},[]],
+"Pont fessier mini band":[{p:[70,73],t:180,A:[0,0],L:[86,73,-1],f:0},{p:[66,59],t:136,hd:40,A:[0,0],L:[86,73,-1],f:0},[["band","t",0.78]]],
+"Good morning avec haltère":[{p:[56,36],t:-90,A:[62,22,1],L:[56,73,-1],f:0},{p:[50,38],t:-20,hd:15,A:[74,37,1],L:[56,73,-1],f:0},[["db",90]]],
+"Hip thrust unipodal sur banc":[{p:[46,67.5],t:208,hd:-28,A:[46,64,1],L:[66,73.6,-1],M:[-20,-20],f:0},{p:[47,55],t:173,hd:7,A:[47,53,1],L:[66,73.6,-1],M:[-3,-3],f:0},[["bench",6,34,61]]],
+"Fente marchée avec haltère":[{p:[55,36],t:-90,A:[90,90],L:[55,73,-1],f:0},{p:[54,52],t:-90,A:[90,90],L:[72,73,-1],M:[34,72,-1],f:0,g:40},[["dbe"]]],
+"Fente arrière pied avant sur bosu":[{p:[60,26],t:-90,A:[95,95],L:[60,63.7,-1],f:0},{p:[48,43],t:-90,A:[95,95],L:[60,63.7,-1],M:[28,72,-1],f:0,g:40},[["bosu",60,44,10]]],
+"Squat bulgare (split squat)":[{p:[56,36],t:-90,A:[95,95],L:[58,73,-1],M:[24,58,-1],f:0,g:180},{p:[50,54],t:-90,A:[95,95],L:[58,73,-1],M:[24,58,-1],f:0,g:180},[["bench",4,34,61]]],
+"Squat unipodal vers banc":[{p:[56,36],t:-90,A:[10,0],L:[56,73,-1],M:[12,12],f:0},{p:[40,55],t:-72,A:[10,0],L:[56,73,-1],M:[10,10],f:0},[["bench",14,46,58]]],
+"Step-down sur banc":[{p:[62,26],t:-90,A:[95,95],L:[62,61,-1],M:[50,61,-1],f:0,g:0},{p:[62,36],t:-90,A:[95,95],L:[62,61,-1],M:[75,73,-1],f:0,g:0},[["bench",34,72,64]]],
+"Fente avant pied sur step":[{p:[46,36],t:-90,A:[95,95],L:[62,61,-1],M:[34,72,-1],f:0,g:20},{p:[50,50],t:-90,A:[95,95],L:[62,61,-1],M:[30,72,-1],f:0,g:20},[["step",46,80,64]]],
+"Step-up avec haltère":[{p:[62,36],t:-90,A:[95,95],L:[74,59,-1],M:[52,73,-1],f:0,g:0},{p:[74,25],t:-90,A:[95,95],L:[74,59,-1],M:[5,90],f:0},[["step",62,94,62],["dbe"]]],
+"Saut sur step":[{p:[46,52],t:-65,A:[130,130],L:[50,73,-1],f:0},{p:[82,27],t:-80,A:[20,20],L:[82,59,-1],f:0},[["step",66,100,62]]],
+"Squat jump":[{p:[46,54],t:-62,A:[130,130],L:[52,73,-1],f:0},{p:[54,26],t:-90,A:[-60,-60],L:[56,62,-1],f:50},[]],
+"Montées sur pointes avec haltère":[{p:[56,35.5],t:-90,A:[90,90],L:[56,73,-1],f:0},{p:[56,31],t:-90,A:[90,90],L:[56,67.5,-1],f:55},[["dbe"]]],
+"Montées sur pointes talon dans le vide":[{p:[59,32],t:-90,A:[95,95],L:[59,70,-1],f:-15},{p:[59,25],t:-90,A:[95,95],L:[59,63,-1],f:35},[["step",56,96,68]]],
+"Descente excentrique d’Achille":[{p:[59,25],t:-90,A:[95,95],L:[59,63,-1],M:[80,160],f:35},{p:[59,32],t:-90,A:[95,95],L:[59,70,-1],M:[80,160],f:-15},[["step",56,96,68]]],
+"Équilibre unipodal sur bosu ":null,
+"Planche avant-bras":[PL,PL,[]],
+"Planche avant-bras sur bosu":[PB,PB,[["bosu",70,44,10]]],
+"Dead bug":[{p:[70,73],t:180,A:[-90,-90],L:[-90,0]},{p:[70,73],t:180,A:[190,190],L:[-12,-12],M:[-90,0]},[]],
+"Bird dog":[{p:[54,55],t:-25,hd:15,A:[90,90],L:[90,177]},{p:[54,55],t:-25,hd:15,A:[-20,-20],B:[90,90],L:[90,177],M:[170,170]},[]],
+"Crunch inversé":[{p:[70,73],t:180,A:[0,0],L:[-90,0]},{p:[68,70],t:170.5,A:[0,0],L:[-115,-25]},[]],
+"Toe touches":[{p:[70,73],t:180,A:[-90,-90],L:[-90,-90]},{p:[70,73],t:215,A:[-65,-65],L:[-90,-90]},[]],
+"V-up":[{p:[70,73],t:180,A:[180,180],L:[0,0],f:-35},{p:[70,73],t:240,A:[-45,-45],L:[-60,-60],f:-70},[]],
+"Ciseaux (flutter kicks)":[{p:[70,73],t:180,A:[0,0],L:[-28,-28],M:[-8,-8]},{p:[70,73],t:180,A:[0,0],L:[-8,-8],M:[-28,-28]},[]],
+"Relevé de genoux assis sur banc":[{p:[56,53],t:-115,A:[52,55,1],L:[10,10]},{p:[56,53],t:-115,A:[52,55,1],L:[-55,70]},[["bench",18,62,57]]],
+"Crunch sur bosu":[{p:[62,62.5],t:170,A:[-80,130],L:[84,73,-1],f:0},{p:[62,62.5],t:205,A:[-100,125],L:[84,73,-1],f:0},[["bosu",60,44,10]]],
+"Pompes mains sur banc":[{p:[67.9,46.1],t:-45,hd:5,A:[90,90],L:[135,135],f:40},{p:[71.7,50.7],t:-36,hd:5,A:[80,59,1],L:[144,144],f:40},[["bench",76,112,62]]],
+"Curl ischios mini band":[{p:[50,72],t:180,A:[180,180],L:[0,0],f:90},{p:[50,72],t:180,A:[180,180],L:[0,-110],f:-60},[["band","s",0.92]]],
+"Nordic assisté":[{p:[50,55],t:-90,A:[70,20],L:[90,180]},{p:[66.5,64.5],t:-30,hd:15,A:[50,75],L:[150,180]},[["pt",31,72]]],
+"Marche valise (suitcase carry)":[{p:[56,36],t:-90,A:[90,90],L:[64,73,-1],M:[46,73,-1],f:0,g:0},{p:[56,36],t:-90,A:[90,90],L:[46,73,-1],M:[64,73,-1],f:0,g:0},[["dbe"]]],
+"Montées sur pointes genoux fléchis":[{p:[50,40],t:-85,A:[95,95],L:[57,73,-1],f:0},{p:[50,35],t:-85,A:[95,95],L:[57,67.5,-1],f:55},[]],
+"Relevés de pointes de pied":[{p:[53,36],t:-90,A:[95,95],L:[56,73,-1],f:0},{p:[53,36],t:-90,A:[95,95],L:[56,73,-1],f:-40},[["wall",46]]],
+"Sauts pogo":[{p:[56,36],t:-90,A:[95,95],L:[56,73,-1],f:0},{p:[56,27],t:-90,A:[95,95],L:[56,64,-1],f:60},[]],
+"Fente sautée alternée":[{p:[48,52],t:-90,A:[80,80],L:[62,73,-1],M:[32,72,-1],f:0,g:40},{p:[48,34],t:-90,A:[-60,-60],L:[56,60,-1],M:[40,60,-1],f:20},[]],
+"Rowing haltère appui banc":[{p:[50,40],t:-20,hd:15,A:[90,90],B:[82,54,1],L:[46,73,-1],f:0},{p:[50,40],t:-20,hd:15,A:[130,90],B:[82,54,1],L:[46,73,-1],f:0},[["bench",78,114,56],["dbe"]]],
+"Face pull mini band":[{p:[54,36],t:-90,A:[5,5],L:[56,73,-1],f:0},{p:[54,36],t:-90,A:[195,-10],L:[56,73,-1],f:0},[["bl",112,18]]],
+"Pont fessier + squeeze":[{p:[70,73],t:180,A:[0,0],L:[86,73,-1],f:0},{p:[66,59],t:136,hd:40,A:[0,0],L:[86,73,-1],f:0},[["dbk"]]],
+"Squeeze adducteurs":[{p:[70,73],t:180,A:[0,0],L:[88,73,-1],f:0},{p:[70,73],t:180,A:[0,0],L:[88,73,-1],f:0},[["dbk"]]],
+"Équilibre unipodal jambe libre active":[{p:[56,36],t:-90,A:[40,40],L:[56,73,-1],M:[30,30],f:0},{p:[56,36],t:-90,A:[40,40],L:[56,73,-1],M:[140,140],f:0},[]],
+"Équilibre unipodal yeux fermés":[{p:[56,36],t:-90,A:[95,95],L:[56,73,-1],M:[56,73,-1],f:0,g:0},{p:[56,36],t:-90,A:[40,40],L:[56,73,-1],M:[10,95],f:0},[]],
+"Squat isométrique au mur":[{p:[53,36],t:-90,A:[95,95],L:[58,73,-1],f:0},{p:[46,52],t:-90,A:[10,0],L:[65,73,-1],f:0},[["wall",40]]],
+"Rotation russe avec haltère":[{p:[60,70],t:-110,A:[30,10],L:[-25,-25],f:-80,hd:0},{p:[60,70],t:-100,A:[10,-10],L:[-25,-25],f:-80},[["db",90]]],
+"Relevé de jambes allongé":[{p:[70,73],t:180,A:[0,0],L:[-5,-5],f:-60},{p:[70,73],t:180,A:[0,0],L:[-90,-90]},[]],
+"Marche sur pointes":[{p:[59,31],t:-90,A:[95,95],L:[52,66.5,-1],M:[66,73,-1],f:55,g:0},{p:[59,31],t:-90,A:[95,95],L:[66,66.5,-1],M:[52,73,-1],f:55,g:0},[]],
+"Marche sur talons":[{p:[59,36],t:-90,A:[95,95],L:[66,73,-1],M:[52,73,-1],f:-40,g:0},{p:[59,36],t:-90,A:[95,95],L:[52,73,-1],M:[66,73,-1],f:0,g:-40},[]],
+"Saut en longueur sur place":[{p:[46,52],t:-62,A:[130,130],L:[50,73,-1],f:0},{p:[84,45],t:-70,A:[20,20],L:[88,73,-1],f:0},[]],
+"Sauts groupés":[{p:[56,36],t:-90,A:[95,95],L:[56,73,-1],f:0},{p:[56,30],t:-80,A:[40,40],L:[20,110],f:20},[]],
+"Montées de genoux rapides":[{p:[56,36],t:-90,A:[60,-60],L:[0,100],M:[56,73,-1],f:0,g:0},{p:[56,36],t:-90,A:[120,60],L:[56,73,-1],M:[0,100],f:0,g:0},[]],
+"Développé épaule avec haltère":[{p:[56,38],t:-90,A:[100,-90],L:[56,73,-1],f:0},{p:[56,38],t:-90,A:[-90,-90],L:[56,73,-1],f:0},[["dbe"]]],
+"Y-T-W allongé":[{p:[50,72],t:180,A:[180,180],L:[0,0],f:90},{p:[50,72],t:190,A:[205,210],L:[0,0],f:90},[]],
+"Mobilité 90/90":[{p:[56,68],t:-90,A:[80,80],L:[10,170],M:[170,170],f:0},{p:[56,68],t:-90,A:[80,80],L:[170,170],M:[10,170],f:0},[]],
+"Fente basse avec rotation du buste":[{p:[48,56],t:-90,A:[80,80],L:[68,73,-1],M:[28,73,-1],f:0,g:30},{p:[48,56],t:-90,A:[-85,-85],B:[80,80],L:[68,73,-1],M:[28,73,-1],f:0,g:30},[]],
+"Étirement actif des fléchisseurs":[{p:[52,54],t:-90,A:[95,95],L:[70,73,-1],M:[130,155],f:0,g:90},{p:[58,53],t:-90,A:[-85,-85],L:[70,73,-1],M:[130,155],f:0,g:90},[]],
+"Cercles de hanche à quatre pattes":[{p:[54,55],t:-25,hd:15,A:[90,90],L:[90,177]},{p:[54,55],t:-25,hd:15,A:[90,90],L:[90,177],M:[165,-165]},[]],
+"Squat partiel unipodal sur bosu":[{p:[60,26],t:-90,A:[10,0],L:[60,63.7,-1],M:[25,25],f:0},{p:[52,38],t:-75,A:[10,0],L:[60,63.7,-1],M:[25,25],f:0},[["bosu",60,44,10]]],
+"Pont fessier pieds sur bosu":[{p:[70,73],t:180,A:[0,0],L:[94,63,-1],f:0},{p:[66,59],t:136,hd:40,A:[0,0],L:[94,63,-1],f:0},[["bosu",94,44,10]]],
+"Pompes mains sur bosu":[{p:[52,45],t:-20,hd:5,A:[90,90],L:[135,135],f:40},{p:[52,55],t:-12,hd:5,A:[71,65,1],L:[154,154],f:40},[["bosu",71,44,10]]],
+"Réception de saut sur bosu":[{p:[34,50],t:-65,A:[130,130],L:[36,73,-1],f:0},{p:[62,33],t:-80,A:[40,20],L:[62,63.5,-1],M:[10,90],f:0},[["bosu",62,44,10]]],
+"Réception de saut stabilisée":[{p:[40,50],t:-65,A:[130,130],L:[42,73,-1],f:0},{p:[62,34],t:-80,A:[40,20],L:[62,73,-1],M:[10,90],f:0},[]],
+"Pas alternés rapides sur step":[{p:[66,36],t:-90,A:[60,-60],L:[75,61,-1],M:[60,73,-1],f:0,g:0},{p:[66,36],t:-90,A:[120,60],L:[60,73,-1],M:[75,61,-1],f:0,g:0},[["step",66,100,64]]],
+"Descente latérale du step":[{p:[62,26],t:-90,A:[95,95],L:[62,61,-1],M:[50,61,-1],f:0,g:0},{p:[62,36],t:-90,A:[95,95],L:[62,61,-1],M:[75,73,-1],f:0,g:0},[["step",34,72,64]]],
+"Crunch vélo (bicycle)":[{p:[70,73],t:205,A:[-100,125],L:[-100,-30],M:[-5,-5]},{p:[70,73],t:205,A:[-100,125],L:[-5,-5],M:[-100,-30]},[]],
+"Planche araignée (spider)":[{p:[63.2,53.8],t:-20,hd:10,A:[90,90],L:[150,150],f:20},{p:[63.2,53.8],t:-20,hd:10,A:[90,90],L:[10,120],M:[150,150],f:0,g:20},[]],
+"Planche touche-épaule":[{p:[63.2,53.8],t:-20,hd:10,A:[90,90],L:[150,150],f:20},{p:[63.2,53.8],t:-20,hd:10,A:[-40,-120],B:[90,90],L:[150,150],f:20},[]],
+"Planche avec jambe levée":[PL,{...PL,L:[190,190],M:[167,167]},[]],
+"Planche dynamique bas-haut":[PL,{p:[63.2,53.8],t:-20,hd:10,A:[90,90],L:[150,150],f:20},[]],
+"Flexion latérale avec haltère":[{p:[60,35],t:-90,a:[90,90],l:[55,73,1],r:[65,73,1]},{p:[60,35],t:-108,a:[90,90],l:[55,73,1],r:[65,73,1]},[["dbF","a",0]],1],
+"Bûcheron avec haltère (wood chop)":[{p:[50,48],t:-60,A:[75,85],L:[56,73,-1],f:0},{p:[56,36],t:-90,A:[-60,-80],L:[56,73,-1],f:0},[["db",45]]],
+"Copenhagen plank court":[{p:[62,48],t:180,a:[90,5],b:[-90,-90],l:[70,73,1],r:[96,57,-1]},{p:[62,48],t:180,a:[90,5],b:[-90,-90],l:[96,58,-1],r:[96,57,-1]},[["bench",90,118,60]],1],
+"Fente latérale (cossack)":[{p:[60,35],a:[58,24,1],b:[62,24,-1],l:[55,73,1],r:[65,73,1]},{p:[44,53],a:[40,40,1],b:[48,40,-1],l:[30,73,1],r:[78,73,1]},[["dbF","a",0]],1],
+"Fente latérale mini band":[{p:[60,35],a:[100,100],b:[80,80],l:[55,73,1],r:[65,73,1]},{p:[44,53],a:[100,100],b:[80,80],l:[30,73,1],r:[78,73,1]},[["bandF","k"]],1],
+"Marche latérale mini band":[{p:[60,38],l:[52,73,1],r:[68,73,1]},{p:[52,38],l:[44,73,1],r:[60,73,1]},[["bandF","k"]],1],
+"Monster walk mini band":[{p:[60,38],l:[48,73,1],r:[72,73,1]},{p:[52,38],l:[40,73,1],r:[64,73,1]},[["bandF","a"]],1],
+"Sauts latéraux unipodaux":[{p:[44,38],a:[60,30],b:[120,150],l:[55,58,-1],r:[48,73,1]},{p:[76,38],a:[60,30],b:[120,150],l:[71,73,1],r:[88,60,1]},[],1],
+"Sauts patineur":[{p:[44,38],a:[60,30],b:[120,150],l:[55,58,-1],r:[48,73,1]},{p:[76,38],a:[60,30],b:[120,150],l:[71,73,1],r:[88,60,1]},[],1],
+"Planche latérale":[{p:[60,50],t:180,a:[90,5],b:[-90,-90],l:[96,72,-1],r:[96,64,-1]},{p:[60,50],t:180,a:[90,5],b:[-90,-90],l:[96,72,-1],r:[96,64,-1]},[],1],
+"Planche latérale hip dips":[{p:[60,58],t:202,a:[90,5],b:[-90,-90],l:[96,72,-1],r:[96,64,-1]},{p:[60,50],t:180,a:[90,5],b:[-90,-90],l:[96,72,-1],r:[96,64,-1]},[],1],
+"Planche latérale + élévation":[{p:[60,50],t:180,a:[90,5],b:[-90,-90],l:[96,72,-1],r:[96,64,-1]},{p:[60,50],t:180,a:[90,5],b:[-90,-90],l:[96,72,-1],r:[98,50,-1]},[],1],
+"Éversion de cheville mini band":[{p:[60,36],l:[55,73,1],r:[65,73,1],fr:0},{p:[60,36],l:[55,73,1],r:[65,73,1],fr:-35},[["blF",8,70,"r"]],1],
+"Inversion de cheville mini band":[{p:[60,36],l:[55,73,1],r:[65,73,1],fr:0},{p:[60,36],l:[55,73,1],r:[65,73,1],fr:35},[["blF",112,70,"r"]],1],
+"Clamshell mini band":[{p:[56,64],t:180,a:[180,180],b:[20,40],l:[8,170],r:[8,170]},{p:[56,64],t:180,a:[180,180],b:[20,40],l:[8,170],r:[-40,170]},[["bandF","k"]],1],
+"Fire hydrant mini band":[{p:[56,64],t:180,a:[180,180],b:[20,40],l:[8,170],r:[8,170]},{p:[56,64],t:180,a:[180,180],b:[20,40],l:[8,170],r:[-40,170]},[["bandF","k"]],1],
+"Abduction allongé mini band":[{p:[56,64],t:180,a:[180,180],b:[20,40],l:[0,0],r:[0,0]},{p:[56,64],t:180,a:[180,180],b:[20,40],l:[0,0],r:[-30,-30]},[["bandF","a"]],1],
+"Rotation externe mini band":[{p:[60,36],a:[90,0],b:[85,85],l:[55,73,1],r:[65,73,1]},{p:[60,36],a:[90,180],b:[85,85],l:[55,73,1],r:[65,73,1]},[["blF",110,29,"a"]],1],
+"Glissé d’adducteur":[{p:[60,38],l:[55,73,1],r:[65,73,1]},{p:[62,42],l:[57,73,1],r:[80,73,1]},[],1]
+};
+delete Q["Équilibre unipodal sur bosu "];
+Q["Équilibre bosu yeux fermés"]=Q["Équilibre unipodal sur bosu"];
+Q["Équilibre bosu avec haltère"]=[Q["Équilibre unipodal sur bosu"][0],Q["Équilibre unipodal sur bosu"][1],[["bosu",60,44,10],["db",90]]];
+const FS=(up,ar)=>{const hr=[66,56],kr=up?AD(hr,-15,19):[66,73],ak=up?[kr[0]-1,kr[1]+7]:[63,76],hl=[54,56],kl=[54,73],al=[51,76];
+let o='<line x1="2" y1="76.5" x2="118" y2="76.5" stroke="#9DB0A3" stroke-width="1.2"/>';
+o+=sg([[47,72],[47,50]],SK,4.4)+sg([[73,72],[73,50]],SK,4.4)+sg([[47,50],[73,50]],BL,7)+sg([[60,50],[60,56]],BL,10)+sg([hl,hr],GR,6)+sg([hl,kl],GR,7)+sg([kl,al],SK,4.6)+sg([hr,kr],GR,7)+sg([kr,ak],SK,4.6)+head([60,50],-90,0,1)+dt([hl,hr,kl,kr,[47,50],[73,50]]);
+const b0=[hl[0]+(kl[0]-hl[0])*.85,hl[1]+(kl[1]-hl[1])*.85],b1=[hr[0]+(kr[0]-hr[0])*.85,hr[1]+(kr[1]-hr[1])*.85];
+return `<svg viewBox="0 -10 120 86" role="img" aria-label="Fire hydrant vu de dos">${o}${pl([b0,b1],"#F07818",2.6)}${ar?arw([[66,73],AD([66,56],-15,19)]):""}</svg>`};
+Q["Fire hydrant mini band"]=[FS(0,1),FS(1,0)];
+["Pont fessier unipodal","Pont fessier talons sur banc","Pont fessier isométrique","Pont fessier mini band","Pont fessier + squeeze","Pont fessier pieds sur bosu","Hip thrust sur banc","Hip thrust unipodal sur banc"].forEach(n=>{if(Q[n])Q[n][4]=6});
+Q["Jump squat avec haltère"]=[{p:[44,56],t:-65,A:[61,44,1],L:[56,73,-1],f:0},{p:[54,26],t:-90,A:[62,20,1],L:[56,62,-1],f:50},[["db",90]]];
+Q["Squat jump avec mini band"]=[Q["Squat jump"][0],Q["Squat jump"][1],[["band","t",.78]]];
+Q["Drop jump depuis step"]=[{p:[62,26],t:-90,A:[95,95],L:[62,61,-1],f:0},{p:[82,28],t:-85,A:[-50,-50],L:[82,64,-1],f:50},[["step",34,72,64]]];
+Q["Bondissements alternés (bounding)"]=[{p:[52,36],t:-80,A:[60,-60],L:[52,73,-1],M:[20,100],f:0},{p:[70,28],t:-82,A:[-60,60],L:[76,62,-1],M:[0,100],f:40,g:20},[]];
+//TG-START
+const RX={"Quadriceps":/squat|fente|step-up|montée sur step|step-down|descente latérale|saut sur step|bulgare|jump|réception|goblet|bondiss/i,"Ischio-jambiers":/ischio|roumain|nordic|good morning|pont fessier|curl/i,"Adducteurs":/adducteur|cossack|copenhagen|fente latérale|glissé|squeeze/i,"Fessiers":/pont fessier|hip thrust|clamshell|hydrant|abduction|monster|marche latérale|fente|bulgare|step-up|montée sur step|roumain|good morning|squat mini band/i,"Mollets":/pointes|achille|pogo|marche sur/i,"Abdos":/crunch|toe touches|v-up|hollow|ciseaux|mountain|araignée|planche|dead bug|rotation russe|relevé de|bûcheron|flexion latérale|bird dog|marche valise/i,"Lombaires":/bird dog|good morning|roumain|pont fessier|planche avant|planche latérale|marche valise|y-t-w|hollow|cercles de hanche/i,"Haut du corps":/pompes|rowing|développé|y-t-w|face pull|rotation externe|planche dynamique|touche-épaule|bûcheron|planche avant|araignée/i,"Cheville":/cheville|équilibre|pointes|achille|pogo|réception|latéraux unipodaux|talon dans le vide|marche sur|jump|bondiss|drop/i,"Genou":/squat|fente|step|nordic|réception|curl ischios|bulgare|jump|drop|descente latérale/i,"Hanche":/hanche|hip|clamshell|hydrant|abduction|copenhagen|cossack|adducteur|glissé|90.90|fléchisseurs|monster|marche latérale|fente latérale|fente basse|pont fessier|bulgare|good morning|roumain|genoux rapides/i,"Épaule":/pompes|face pull|rotation externe|développé|y-t-w|rowing|planche|mountain/i,"Explosivité":/saut|pogo|jump|réception|bondiss|drop|pas alternés rapides|genoux rapides|patineur/i},
+CAT={Ischios:"Ischio-jambiers",Adducteurs:"Adducteurs",Fessiers:"Fessiers",Mollets:"Mollets",Abdos:"Abdos",Gainage:"Abdos",Épaules:"Haut du corps",Chevilles:"Cheville",Hanches:"Hanche",Genoux:"Genou","Explosivité":"Explosivité"};
+function TG(x){const t=Object.keys(RX).filter(k=>RX[k].test(x[1]));if(CAT[x[0]]&&!t.includes(CAT[x[0]]))t.push(CAT[x[0]]);return t}
+//TG-END
+const ib=s=>s.replace(/^<svg[^>]*>|<\/svg>$/g,""),ov=()=>S.sty=="Superposé",ovs=(a,b)=>`<div class="pc"><div><svg viewBox="0 -10 120 86" role="img" aria-label="Départ et arrivée superposés"><g opacity=".32">${ib(b)}</g>${ib(a)}</svg>Départ · arrivée en transparence</div></div>`;
+const pic=n=>{const d=Q[n];if(!d)return'<div class="ph">Schéma à venir</div>';if(typeof d[0]=="string")return ov()?ovs(d[0],d[1]):`<div class="pc"><div>${d[0]}Départ</div><div>${d[1]}Arrivée</div></div>`;const f=d[3],g=f?svgF:svg,a=jn(d[0],f),b=jn(d[1],f);let k=0,m=0;a.forEach((p,i)=>{const s=Math.hypot(p[0]-b[i][0],p[1]-b[i][1])*(i>5?.8:1);if(s>m){m=s;k=i}});if(d[4]!=null)k=d[4];return ov()?ovs(g(d[0],d[2],[a[k],b[k]]),g(d[1],d[2])):`<div class="pc"><div>${g(d[0],d[2],[a[k],b[k]])}Départ</div><div>${g(d[1],d[2])}Arrivée</div></div>`};
+const M3=c=>new THREE.MeshStandardMaterial({color:c,roughness:.7});
+document.body.insertAdjacentHTML("beforeend",'<div class="m3" id="m3" hidden><div class="mb"><div class="mh"><b id="m3t"></b><button class="g" id="m3x">Fermer</button></div><canvas id="cv"></canvas><div class="mf">Glisse pour tourner la figure · le mouvement joue en boucle (départ → arrivée)</div></div></div>');
+let T3=null;
+function pts3(q,f){const P=q.p,t=q.t??-90,sh=AD(P,t,20),hd=AD(sh,t+(q.hd||0),9.5);
+if(f){const nv=AD([0,0],t+90,1),w=(c,a)=>[c[0]+nv[0]*a,c[1]+nv[1]*a],s0=w(sh,-10),s1=w(sh,10),h0=w(P,-5),h1=w(P,5),a=lb(s0,q.a||[95,95],14,13),b=lb(s1,q.b||[85,85],14,13),l=lb(h0,q.l||[90,90],19,19),r=lb(h1,q.r||[90,90],19,19);
+return[P,sh,hd,h0,h1,s0,s1,a[0],a[1],b[0],b[1],l[0],l[1],AD(l[1],q.fl??180,8),r[0],r[1],AD(r[1],q.fr??0,8)].map(p=>[0,38-p[1],60-p[0]])}
+const A=lb(sh,q.A,14,13),B=q.B?lb(sh,q.B,14,13):A,L=lb(P,q.L,19,19),Mm=q.M?lb(P,q.M,19,19):L,df=k=>AN(k[0],k[1])-90,fn=q.f??df(L),ff=q.g??(q.M?df(Mm):fn),z=(p,k)=>[p[0]-60,38-p[1],k];
+return[z(P,0),z(sh,0),z(hd,0),z(P,4),z(P,-4),z(sh,9),z(sh,-9),z(A[0],9),z(A[1],9),z(B[0],-9),z(B[1],-9),z(L[0],4),z(L[1],4),z(AD(L[1],fn,8),4),z(Mm[0],-4),z(Mm[1],-4),z(AD(Mm[1],ff,8),-4)]}
+function seg3(m,a,b){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),d=B.clone().sub(A),n=d.length()||.01;m.position.copy(A).add(B).multiplyScalar(.5);m.scale.set(1,n,1);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize())}
+function eq3(eq,f,g){const bx=(w,h,xc,yc,c)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(f?22:w,h,f?w:22),M3(c));m.position.set(f?0:xc-60,yc,f?60-xc:0);g.add(m)};
+eq.forEach(e=>{const t=e[0];
+if(t=="bench"){const h=76-e[3]-4;bx(e[2]-e[1],4,(e[1]+e[2])/2,38-e[3]-2,0xB08B5E);bx(2.5,h,e[1]+3,38-e[3]-4-h/2,0x7A5F3D);bx(2.5,h,e[2]-3,38-e[3]-4-h/2,0x7A5F3D)}
+if(t=="step")bx(e[2]-e[1],76-e[3],(e[1]+e[2])/2,38-e[3]-(76-e[3])/2,0xCDD3CF);
+if(t=="wall")bx(3,86,e[1]+1.5,5,0xD5DAD6);
+if(t=="bosu"){const m=new THREE.Mesh(new THREE.SphereGeometry(e[2]/2,24,10,0,6.283,0,1.5708),M3(0x3C78C2));m.scale.y=e[3]/(e[2]/2);m.position.set(f?0:e[1]-60,-38,f?60-e[1]:0);g.add(m)}})}
+function size3(){const c=$("cv"),w=c.clientWidth,h=c.clientHeight;T3.r.setSize(w,h,false);T3.cam.aspect=w/h;T3.cam.updateProjectionMatrix()}
+function loop3(){if($("m3").hidden){T3.on=0;return}const k=.5-.5*Math.cos(2*Math.PI*performance.now()/3600),c=T3.cam,D=190;T3.upd(k);c.position.set(D*Math.sin(T3.th)*Math.cos(T3.ph),D*Math.sin(T3.ph),D*Math.cos(T3.th)*Math.cos(T3.ph));c.lookAt(0,0,0);T3.r.render(T3.sc,c);requestAnimationFrame(loop3)}
+function open3d(e){if(e<0)return;const d=Q[E[e][1]];if(!d||typeof d[0]=="string"||!window.THREE){alert("Vue 3D indisponible pour cet exercice.");return}
+const f=!!d[3],a=pts3(d[0],f),b=pts3(d[1],f);$("m3t").textContent=E[e][1];$("m3").hidden=false;
+if(!T3){const cv=$("cv"),sc=new THREE.Scene();sc.background=new THREE.Color(0xE8EFE8);sc.add(new THREE.HemisphereLight(0xffffff,0x778877,.9));const dl=new THREE.DirectionalLight(0xffffff,.7);dl.position.set(60,120,90);sc.add(dl);
+const fl=new THREE.Mesh(new THREE.PlaneGeometry(300,300),M3(0xCFDACF));fl.rotation.x=-Math.PI/2;fl.position.y=-38.5;sc.add(fl);
+T3={r:new THREE.WebGLRenderer({canvas:cv,antialias:true}),sc,cam:new THREE.PerspectiveCamera(38,1,1,1000),th:0,ph:.2,g:null,on:0};
+let dn=null;cv.onpointerdown=ev=>{dn=[ev.clientX,ev.clientY];cv.setPointerCapture(ev.pointerId)};cv.onpointermove=ev=>{if(!dn)return;T3.th-=(ev.clientX-dn[0])*.01;T3.ph=Math.max(-.2,Math.min(1.2,T3.ph+(ev.clientY-dn[1])*.01));dn=[ev.clientX,ev.clientY]};cv.onpointerup=()=>{dn=null};
+$("m3x").onclick=()=>{$("m3").hidden=true};$("m3").onclick=ev=>{if(ev.target.id=="m3")$("m3").hidden=true};addEventListener("resize",()=>{if(!$("m3").hidden)size3()})}
+if(T3.g)T3.sc.remove(T3.g);const g=new THREE.Group();T3.g=g;T3.sc.add(g);
+const SG=[[0,1,3.4,0x2E86DE],[5,6,2.4,0x2E86DE],[3,4,2.8,0x8A929A],[5,7,2.2,0x2E86DE],[7,8,1.8,0xEDB98F],[6,9,2.2,0x2E86DE],[9,10,1.8,0xEDB98F],[3,11,3.1,0x8A929A],[11,12,2.1,0xEDB98F],[12,13,1.8,0xF5F5F5],[4,14,3.1,0x8A929A],[14,15,2.1,0xEDB98F],[15,16,1.8,0xF5F5F5]].map(s=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(s[2],s[2],1,12),M3(s[3]));g.add(m);return[m,s[0],s[1]]});
+const BL=[[2,5.8,0xEDB98F],[5,2.6,0x2E86DE],[6,2.6,0x2E86DE],[3,3,0x8A929A],[4,3,0x8A929A],[7,2.2,0x2E86DE],[9,2.2,0x2E86DE],[8,2,0xEDB98F],[10,2,0xEDB98F],[11,3.1,0x8A929A],[14,3.1,0x8A929A],[12,2.2,0xEDB98F],[15,2.2,0xEDB98F]].map(s=>{const m=new THREE.Mesh(new THREE.SphereGeometry(s[1],14,10),M3(s[2]));g.add(m);return[m,s[0]]});
+const hr=new THREE.Mesh(new THREE.SphereGeometry(6.1,16,8,0,6.283,0,1),M3(0x5B3A29));g.add(hr);
+let db=null;if(d[2].some(x=>["db","dbe","dbF"].includes(x[0]))){db=new THREE.Group();const bar=new THREE.Mesh(new THREE.CylinderGeometry(.9,.9,12,10),M3(0x555555));bar.rotation.x=Math.PI/2;db.add(bar);[6,-6].forEach(z=>{const p=new THREE.Mesh(new THREE.CylinderGeometry(3.8,3.8,2.2,14),M3(0x1F2A24));p.rotation.x=Math.PI/2;p.position.z=z;db.add(p)});g.add(db)}
+eq3(d[2],f,g);
+T3.upd=k=>{const p=a.map((x,i)=>x.map((v,j)=>v+(b[i][j]-v)*k));SG.forEach(s=>seg3(s[0],p[s[1]],p[s[2]]));BL.forEach(s=>s[0].position.set(...p[s[1]]));hr.position.set(p[2][0],p[2][1]+.6,p[2][2]);if(db)db.position.set(...p[8])};
+T3.th=f?1.1:.6;T3.ph=.2;size3();if(!T3.on){T3.on=1;loop3()}}
+const PRG=[
+["Fiche 1 – Ischios (anti-claquage)","Prévenir les claquages aux ischio-jambiers","8 min",[["Pont fessier unipodal",8],["Soulevé de terre roumain 1 jambe",8],["Curl ischios mini band",10],["Nordic assisté",5]]],
+["Fiche 2 – Adducteurs et aine (anti-pubalgie)","Renforcer les adducteurs et l’aine","7 min",[["Copenhagen plank court",20],["Fente latérale (cossack)",8],["Squeeze adducteurs",8],["Marche latérale mini band",10]]],
+["Fiche 3 – Chevilles (anti-entorse)","Proprioception et stabilité des chevilles","6 min",[["Équilibre unipodal yeux fermés",30],["Montées sur pointes avec haltère",10],["Éversion de cheville mini band",12],["Sauts latéraux unipodaux",8]]],
+["Fiche 4 – Genoux (stabilité des appuis)","Protéger les genoux et les ligaments","8 min",[["Squat mini band",10],["Step-down sur banc",8],["Fente arrière avec haltère",8],["Réception de saut stabilisée",5]]],
+["Fiche 5 – Fessiers et bassin","Stabilité du bassin et poussée en sprint","7 min",[["Clamshell mini band",12],["Hip thrust sur banc",10],["Monster walk mini band",10],["Planche latérale + élévation",8]]],
+["Fiche 6 – Gainage et tronc","Bas du dos et transmission de force","6 min",[["Dead bug",8],["Bird dog",8],["Planche avant-bras",35],["Marche valise (suitcase carry)",20]]],
+["Fiche 7 – Mollets, Achille et tibias","Prévenir tendinites et douleurs de tibias","6 min",[["Montées sur pointes avec haltère",12],["Montées sur pointes genoux fléchis",12],["Relevés de pointes de pied",15],["Sauts pogo",20]]],
+["Fiche 8 – Explosivité et activation","Réveil neuromusculaire avant la séance","5 min",[["Squat goblet avec haltère",8],["Squat jump",6],["Fente sautée alternée",6],["Sauts patineur",8]]],
+["Fiche 9 – Épaules et haut du corps","Duels, contacts et chutes","7 min",[["Pompes",10],["Rowing haltère appui banc",10],["Rotation externe mini band",12],["Face pull mini band",12]]],
+["Fiche 10 – Abdos complet","Sangle abdominale, obliques et bas-ventre","7 min",[["Crunch inversé",12],["Toe touches",10],["Planche araignée (spider)",8],["Hollow body hold",25]]],
+["Fiche 11 – Proprioception (bosu)","Équilibre et contrôle des appuis instables","8 min",[["Équilibre unipodal sur bosu",30],["Squat sur bosu",10],["Fente arrière pied avant sur bosu",8],["Réception de saut sur bosu",5]]],
+["Fiche 12 – Quadriceps et step","Force des cuisses et contrôle du genou","8 min",[["Montée sur step (step-up)",10],["Squat bulgare (split squat)",8],["Descente latérale du step",8],["Fente marchée avec haltère",10]]],
+["Ischios B – Excentrique (anti-claquage)","Renforcement excentrique des ischio-jambiers","8 min",[["Nordic assisté",5],["Soulevé de terre roumain 1 jambe",8],["Good morning avec haltère",10],["Pont fessier talons sur banc",10],["Curl ischios mini band",10]],"Prévention"],
+["Ischios C – Isométrie et contrôle du bassin","Stabiliser le bassin et les ischios avant les sprints","7 min",[["Pont fessier isométrique",30],["Pont fessier unipodal",10],["Curl ischios mini band",12],["Soulevé de terre roumain 1 jambe",6]],"Prévention"],
+["Quadriceps A – Force et contrôle","Protéger les quadriceps et le genou","8 min",[["Squat bulgare (split squat)",8],["Step-down sur banc",8],["Squat isométrique au mur",30],["Montée sur step (step-up)",10],["Fente isométrique (maintien bas)",20]],"Prévention"],
+["Quadriceps B – Excentrique","Freiner et absorber : descentes lentes","7 min",[["Squat unipodal vers banc",8],["Descente latérale du step",8],["Fente arrière avec haltère",8],["Squat goblet avec haltère",10]],"Prévention"],
+["Adducteurs A – Prévention de l’aine","Protéger l’aine et les adducteurs","7 min",[["Copenhagen plank court",20],["Squeeze adducteurs",10],["Glissé d’adducteur",8],["Fente latérale lente (excentrique)",8]],"Prévention"],
+["Adducteurs B – Force et stabilité","Adducteurs, abducteurs et bassin","8 min",[["Fente latérale (cossack)",8],["Pont fessier + squeeze",10],["Fente latérale mini band",8],["Marche latérale mini band",10],["Copenhagen plank court",25]],"Prévention"],
+["Chevilles A – Proprioception avancée","Équilibre, stabilité et réception","7 min",[["Équilibre unipodal jambe libre active",30],["Équilibre unipodal sur bosu",30],["Éversion de cheville mini band",12],["Inversion de cheville mini band",12],["Réception de saut stabilisée",5]],"Prévention"],
+["Chevilles B – Bosu (retour de blessure)","Reprise progressive sur surface instable","7 min",[["Équilibre unipodal yeux fermés",30],["Équilibre bosu yeux fermés",30],["Squat partiel unipodal sur bosu",8],["Équilibre bosu avec haltère",30]],"Prévention"],
+["Genoux A – Stabilité et réception","Contrôle du genou et des appuis","8 min",[["Squat mini band",12],["Step-down sur banc",8],["Fente arrière pied avant sur bosu",8],["Réception de saut stabilisée",5],["Monster walk mini band",10]],"Prévention"],
+["Genoux B – Excentrique et ischios","Protéger les ligaments du genou","8 min",[["Descente latérale du step",8],["Squat unipodal vers banc",8],["Squat isométrique au mur",35],["Nordic assisté",5]],"Prévention"],
+["Mollets et Achille A – Force","Mollets, soleaire et tendon d’Achille","8 min",[["Montées sur pointes avec haltère",12],["Montées sur pointes genoux fléchis",12],["Descente excentrique d’Achille",8,3],["Maintien sur pointes (isométrique)",30],["Relevés de pointes de pied",15]],"Prévention"],
+["Mollets et Achille B – Tendon","Charger le tendon progressivement","7 min",[["Montées sur pointes talon dans le vide",12],["Descente excentrique d’Achille",8,3],["Marche sur pointes",12],["Sauts pogo",20]],"Prévention"],
+["Épaule A – Coiffe et omoplates","Protéger l’épaule dans les duels et les chutes","8 min",[["Rotation externe mini band",12],["Face pull mini band",12],["Y-T-W allongé",8],["Planche touche-épaule",8],["Pompes descente lente (excentrique)",6]],"Prévention"],
+["Épaule B – Stabilité et poussée","Force et contrôle de l’épaule","8 min",[["Pompes",10],["Développé épaule avec haltère",8],["Rowing haltère appui banc",10],["Pompes mains sur bosu",8],["Planche araignée (spider)",8]],"Prévention"],
+["Complet 1 – Prévention du footballeur","Ischios, aine, genou, cheville, mollet et tronc","10 min",[["Nordic assisté",5],["Copenhagen plank court",20],["Squat bulgare (split squat)",8],["Équilibre unipodal sur bosu",30],["Montées sur pointes avec haltère",12],["Dead bug",8]],"Programmes complets"],
+["Complet 2 – Prévention et stabilité","Bassin, genou, cheville, tronc et épaule","10 min",[["Soulevé de terre roumain 1 jambe",8],["Fente latérale mini band",8],["Step-down sur banc",8],["Éversion de cheville mini band",12],["Planche latérale",30],["Rotation externe mini band",12]],"Programmes complets"],
+["Complet 3 – Retour de blessure","Reprise douce, isométrie et équilibre","10 min",[["Pont fessier unipodal",10],["Squeeze adducteurs",10],["Squat isométrique au mur",30],["Équilibre unipodal yeux fermés",30],["Maintien sur pointes (isométrique)",30],["Bird dog",8]],"Programmes complets"],
+["Complet 4 – Avant match (activation)","Réveil musculaire et explosivité avant le match","8 min",[["Marche latérale mini band",10],["Pont fessier mini band",10],["Squat jump",6],["Sauts patineur",8],["Sauts pogo",20],["Mountain climbers",20]],"Programmes complets"],
+["Bas du corps A – Force","Renforcement général des jambes avec charge","10 min",[["Squat goblet avec haltère",10],["Fente arrière avec haltère",8],["Hip thrust sur banc",10],["Soulevé de terre roumain 1 jambe",8],["Step-up avec haltère",8],["Montées sur pointes avec haltère",12]],"Renforcement général"],
+["Bas du corps B – Mini band et poids du corps","Jambes et fessiers sans charge lourde","9 min",[["Squat mini band",15],["Squat bulgare (split squat)",8],["Pont fessier mini band",12],["Fente latérale mini band",8],["Monster walk mini band",10],["Montées sur pointes genoux fléchis",15]],"Renforcement général"],
+["Abdos A – Complet","Sangle abdominale, bas-ventre et rotation","9 min",[["Crunch inversé",12],["Toe touches",10],["Planche avant-bras",40],["Bird dog",10],["Rotation russe avec haltère",12],["Dead bug avec haltère",8]],"Renforcement général"],
+["Abdos B – Obliques et gainage","Obliques, gainage latéral et transmission de force","9 min",[["Planche latérale",30],["Planche latérale hip dips",10],["Crunch vélo (bicycle)",12],["Bûcheron avec haltère (wood chop)",10],["Flexion latérale avec haltère",10],["Hollow body hold",25]],"Renforcement général"],
+["Haut du corps – Force","Pousser, tirer et gainer","9 min",[["Pompes",10],["Rowing haltère appui banc",10],["Développé épaule avec haltère",8],["Pompes mains sur banc",12],["Face pull mini band",12],["Planche dynamique bas-haut",8]],"Renforcement général"],
+["Général – Corps entier","Jambes, haut du corps et tronc","10 min",[["Squat goblet avec haltère",10],["Pompes",10],["Soulevé de terre roumain 1 jambe",8],["Rowing haltère appui banc",10],["Planche avant-bras",40],["Mountain climbers",30]],"Renforcement général"],
+["Général express – 6 minutes","Version courte pour les jours chargés","6 min",[["Squat mini band",12],["Pompes",8],["Pont fessier unipodal",8],["Dead bug",8]],"Renforcement général"]
+];
+const KF="circuit-fiches",ld=()=>{try{return JSON.parse(localStorage.getItem(KF))||{}}catch(e){return{}}},svd=o=>{try{localStorage.setItem(KF,JSON.stringify(o))}catch(e){}};
+function bk(){const w=document.createElement("div");w.style.cssText="display:flex;flex-direction:column;gap:8px;padding-bottom:12px;border-bottom:1px solid var(--ln)";
+const op=a=>a.map(x=>`<option>${x}</option>`).join(""),mk=(t,f,c)=>{const e=document.createElement("button");e.textContent=t;if(c)e.className=c;e.onclick=f;return e};
+const pg=document.createElement("select");pg.setAttribute("aria-label","Programme type");pg.innerHTML="<option>— Choisir un programme —</option>"+[...new Set(PRG.map(x=>x[4]||"Programmes de base"))].map(g=>`<optgroup label="${g}">${op(PRG.filter(x=>(x[4]||"Programmes de base")==g).map(x=>x[0]))}</optgroup>`).join("");
+pg.onchange=()=>{const q=PRG.find(x=>x[0]==pg.value);if(!q)return;S.p=q[1];S.dur=q[2];S.nt=ntOf(q);S.sl=[0,1,2,3,4,5].map(i=>{const a=q[3][i],k=a?E.findIndex(x=>x[1]==a[0]):-1;return k<0?{e:-1,v:10,s:2}:{e:k,v:a[1],s:a[2]||2}});panel();render()};
+const ks=Object.keys(ld()),sl=document.createElement("select"),nm=document.createElement("input");sl.setAttribute("aria-label","Fiches enregistrées");sl.innerHTML="<option>— Choisir une fiche —</option>"+op(ks);nm.placeholder="Nom de la fiche (ex. Gardiens)";nm.setAttribute("aria-label","Nom de la fiche");
+const r1=document.createElement("div"),r2=document.createElement("div");r1.className=r2.className="two";
+r1.append(nm,mk("Enregistrer",()=>{const n=nm.value.trim();if(!n)return;const o=ld();o[n]=JSON.parse(JSON.stringify(S));svd(o);panel()}));
+r2.append(mk("Ouvrir",()=>{const o=ld();if(o[sl.value]){S=JSON.parse(JSON.stringify(o[sl.value]));panel();render()}},"g"),mk("Supprimer",()=>{const o=ld();if(o[sl.value]){delete o[sl.value];svd(o);panel()}},"g"));
+const ta=document.createElement("textarea");ta.rows=2;ta.placeholder="Code de la fiche à partager ou à importer";ta.setAttribute("aria-label","Code de partage");ta.style.cssText="width:100%;font:inherit;font-size:12px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px";
+const r3=document.createElement("div");r3.className="two";r3.append(mk("Générer le code",()=>{ta.value=btoa(unescape(encodeURIComponent(JSON.stringify(S))));ta.select();try{navigator.clipboard.writeText(ta.value)}catch(e){}},"g"),mk("Importer le code",()=>{try{const o=JSON.parse(decodeURIComponent(escape(atob(ta.value.trim()))));if(o.f){const s=ld();Object.keys(o.f).forEach(k=>s[(o.j?o.j+" – ":"")+k]=o.f[k]);svd(s);toast(Object.keys(o.f).length+" fiche(s) importée(s) : voir « Mes fiches enregistrées »")}else S=o;panel();render()}catch(e){toast("Code invalide")}},"g"));
+w.append(fld("Programmes types ("+PRG.length+")",pg),r1,fld("Mes fiches enregistrées ("+ks.length+")",sl),r2,ta,r3,bkp());if(S.nt){const n=document.createElement("div");n.style.cssText="font-size:13px;border-left:4px solid #D64550;padding:6px 8px;background:var(--bg)";n.textContent="Protocole : "+S.nt;w.append(n)}return w}
+Q["Maintien sur pointes (isométrique)"]=[Q["Montées sur pointes avec haltère"][0],Q["Montées sur pointes avec haltère"][1],[]];
+Q["Fente latérale lente (excentrique)"]=[Q["Fente latérale (cossack)"][0],Q["Fente latérale (cossack)"][1],[],1];
+Q["Relevé de jambes allongé, descente lente (excentrique)"]=[Q["Relevé de jambes allongé"][1],Q["Relevé de jambes allongé"][0],[]];
+Q["Pompes descente lente (excentrique)"]=Q["Pompes"];
+Q["Fente isométrique (maintien bas)"]=[Q["Fente arrière avec haltère"][1],Q["Fente arrière avec haltère"][1],[]];
+const RGX={"Isométrique":/isométrique|hold|planche avant-bras|^planche latérale$|copenhagen|squeeze|équilibre|marche valise|étirement actif/i,"Excentrique":/nordic|excentrique|step-down|descente latérale|roumain|good morning|talon dans le vide|unipodal vers banc|pointes avec haltère|drop jump|réception/i,"Plyométrique":/saut|pogo|jump|réception|bondiss|drop|pas alternés rapides|genoux rapides|patineur/i};
+function RG(x){const r=Object.keys(RGX).filter(k=>RGX[k].test(x[1])),o=["Plyométrique","Isométrique","Excentrique"];if(!r.length)return["Concentrique"];return o.filter(k=>r.includes(k))}
+const SX={i:0,s:1,ph:"ex",n:0,iv:null};
+document.body.insertAdjacentHTML("beforeend",'<div class="sx" id="sx" hidden><div class="sb"><div class="sxh"><b>Mode séance</b><button class="g" id="sxx">Quitter</button></div><div class="bar" id="sxp"><i></i></div><div id="sxc"></div></div></div>');
+const sxL=()=>S.sl.filter(c=>c.e>=0),sxStop=()=>{clearInterval(SX.iv);SX.iv=null},sxTick=f=>{sxStop();SX.iv=setInterval(()=>{SX.n--;const e=$("sxn");if(e)e.textContent=SX.n;if(SX.n<=0){sxStop();f()}},1000)};
+function sxDone(){const L=sxL(),c=L[SX.i];if(SX.s<c.s){SX.s++;const R={"Enchaîner":0,"15 sec":15,"30 sec":30,"45 sec":45,"1 min":60}[S.rec]||0;if(R){SX.ph="rest";SX.n=R;sxGo();sxTick(()=>{SX.ph="ex";sxGo()})}else{SX.ph="ex";sxGo()}}else{SX.i++;SX.s=1;SX.ph="ex";sxGo()}}
+function sxGo(){const L=sxL(),el=$("sxc"),bar=$("sxp").firstChild;sxStop();
+if(!L.length){el.innerHTML="<p>La fiche est vide : ajoute des exercices ou importe un code de fiche.</p>";return}
+if(SX.i>=L.length){bar.style.width="100%";if(!SX.rec){SX.rec=1;logAdd(SX.name||S.p||S.t)}el.innerHTML='<div class="fin"><div style="font-size:56px">💪</div><h2>Séance terminée !</h2><p>'+L.length+' exercices réalisés. Bravo !</p></div><button id="sxr">Recommencer</button>';$("sxr").onclick=()=>{SX.i=0;SX.s=1;SX.ph="ex";SX.rec=0;sxGo()};return}
+const c=L[SX.i],x=E[c.e],u=U[x[3]];bar.style.width=(SX.i/L.length*100)+"%";
+if(SX.ph=="rest"){el.innerHTML=`<h2>Récupération</h2><div class="big" id="sxn">${SX.n}</div><p>Ensuite : série ${SX.s}/${c.s} · ${esc(x[1])}</p><button id="sxsk">Passer</button>`;$("sxsk").onclick=()=>{SX.ph="ex";sxGo()};return}
+el.innerHTML=`${S.nt&&SX.i==0&&SX.s==1?`<div class="sxm" style="border-left:4px solid #D64550;padding-left:8px">${esc(S.nt)}</div>`:""}<div class="sxm">Exercice ${SX.i+1} / ${L.length}</div><h2>${esc(x[1])}</h2>${pic(x[1])}<div class="sxd">${c.s} × ${c.v} ${u.l}${SD[x[4]]}</div><p>${esc(x[5])}</p><div class="sxm">Série ${SX.s} / ${c.s} · matériel : ${esc(x[2])}</div>${x[3]=="sec"?`<div class="big" id="sxn">${c.v}</div>`:""}<div class="sxb"><button class="g" id="sxpv">Précédent</button><button id="sxok">${x[3]=="sec"?"Lancer le chrono":"Série terminée"}</button><button class="g" id="sxnx">Passer</button></div>`;
+$("sxok").onclick=()=>{if(x[3]=="sec"){SX.n=c.v;$("sxn").textContent=SX.n;sxTick(sxDone)}else sxDone()};
+$("sxpv").onclick=()=>{SX.i=Math.max(0,SX.i-1);SX.s=1;SX.ph="ex";sxGo()};$("sxnx").onclick=()=>{SX.i++;SX.s=1;SX.ph="ex";sxGo()}}
+$("sxo").onclick=()=>{SX.i=0;SX.s=1;SX.ph="ex";SX.rec=0;SX.name=SX.nx||S.p||S.t;SX.nx="";$("sx").hidden=false;sxGo();try{navigator.wakeLock&&navigator.wakeLock.request("screen")}catch(e){}};
+$("sxx").onclick=()=>{sxStop();$("sx").hidden=true};
+if(location.hash=="#seance")setTimeout(()=>$("sxo").click(),0);
+document.body.insertAdjacentHTML("beforeend",'<div id="toast" style="position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ac);color:var(--on);padding:10px 16px;border-radius:10px;z-index:20;display:none;max-width:90vw"></div>');
+let tt;const toast=t=>{const e=$("toast");e.textContent=t;e.style.display="block";clearTimeout(tt);tt=setTimeout(()=>{e.style.display="none"},2800)};
+const KJ="circuit-joueurs",lj=()=>{try{return JSON.parse(localStorage.getItem(KJ))||[]}catch(e){return[]}},sj=a=>{try{localStorage.setItem(KJ,JSON.stringify(a))}catch(e){}};
+const prgState=q=>({...S,p:q[1],dur:q[2],nt:ntOf(q),sl:[0,1,2,3,4,5].map(i=>{const a=q[3][i],k=a?E.findIndex(x=>x[1]==a[0]):-1;return k<0?{e:-1,v:10,s:2}:{e:k,v:a[1],s:a[2]||2}})});
+const getF=n=>{const s=ld();if(s[n])return JSON.parse(JSON.stringify(s[n]));const q=PRG.find(x=>x[0]==n);return q?prgState(q):null};
+function pj(){const d=document.createElement("details"),J=lj(),op=a=>a.map(x=>`<option>${esc(x)}</option>`).join(""),mk=(t,f,c)=>{const e=document.createElement("button");e.textContent=t;if(c)e.className=c;e.onclick=f;return e};
+d.open=!!window.__pjo;d.ontoggle=()=>{window.__pjo=d.open};
+const sm=document.createElement("summary");sm.textContent="Joueurs ("+J.length+")";sm.style.cssText="cursor:pointer;font-weight:700;padding:6px 0";d.append(sm);
+const nm=document.createElement("input"),po=document.createElement("select"),h=document.createElement("div");nm.placeholder="Nom du joueur";nm.setAttribute("aria-label","Nom du joueur");po.setAttribute("aria-label","Poste");po.innerHTML=op(["Gardien","Défenseur","Milieu","Attaquant"]);h.className="two";h.append(nm,po);
+d.append(h,mk("Ajouter le joueur",()=>{const n=nm.value.trim();if(!n)return;J.push({id:Date.now(),n,po:po.value,f:[]});sj(J);panel();toast(n+" ajouté")}));
+const all=[...PRG.map(x=>x[0]),...Object.keys(ld())];
+J.forEach(j=>{const b=document.createElement("div");b.style.cssText="border-top:1px solid var(--ln);margin-top:10px;padding-top:8px;display:flex;flex-direction:column;gap:6px";
+b.innerHTML=`<b>${esc(j.n)}</b> <span style="color:var(--mu)">· ${esc(j.po)}</span>`;
+const sel=document.createElement("select");sel.setAttribute("aria-label","Attribuer à "+j.n);sel.innerHTML="<option>— Attribuer un programme —</option>"+op(all);
+sel.onchange=()=>{if(sel.selectedIndex>0&&!j.f.includes(sel.value)){j.f.push(sel.value);sj(J);panel()}};b.append(sel);
+j.f.forEach(n=>{const w=document.createElement("div"),t=document.createElement("span");w.style.cssText="display:flex;gap:6px;align-items:center;flex-wrap:wrap";t.textContent=n;t.style.cssText="flex:1 1 140px;font-size:14px";
+w.append(t,mk("Ouvrir",()=>{const f=getF(n);if(f){S=f;panel();render()}},"g"),mk("Séance",()=>{const f=getF(n);if(f){S=f;panel();render();$("sxo").click()}},"g"),mk("×",()=>{j.f=j.f.filter(z=>z!=n);sj(J);panel()},"g"));b.append(w)});
+const r2=document.createElement("div");r2.className="two";
+r2.append(mk("Code joueur",()=>{const f={};j.f.forEach(n=>{const s=getF(n);if(s)f[n]=s});const ta=$("pjc");ta.value=btoa(unescape(encodeURIComponent(JSON.stringify({j:j.n,f}))));ta.select();try{navigator.clipboard.writeText(ta.value)}catch(e){}toast("Code de "+j.n+" généré")},"g"),mk("Supprimer",()=>{sj(J.filter(z=>z.id!=j.id));panel()},"g"));b.append(r2);d.append(b)});
+const ta=document.createElement("textarea");ta.id="pjc";ta.rows=2;ta.placeholder="Le code d’un joueur apparaît ici : envoie-le-lui par message";ta.setAttribute("aria-label","Code joueur");ta.style.cssText="width:100%;margin-top:10px;font:inherit;font-size:12px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px";d.append(ta);return d}
+const DJ=["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"],GC={"Programmes de base":"#9B8FD1","Prévention":"#3B8AD9","Programmes complets":"#7CB518","Renforcement général":"#E8902B"},km="circuit-moi",lm=()=>{try{return JSON.parse(localStorage.getItem(km))}catch(e){return null}};
+const grp=n=>{const q=PRG.find(x=>x[0]==n);return q?(q[4]||"Programmes de base"):"Fiche"},today=()=>(new Date().getDay()+6)%7;
+const popt=v=>{const g={};PRG.forEach(x=>{const k=x[4]||"Programmes de base";(g[k]=g[k]||[]).push(x[0])});const sv=Object.keys(ld()),o=n=>`<option${n==v?" selected":""}>${esc(n)}</option>`;return Object.keys(g).map(k=>`<optgroup label="${k}">${g[k].map(o).join("")}</optgroup>`).join("")+(sv.length?`<optgroup label="Mes fiches">${sv.map(o).join("")}</optgroup>`:"")};
+function renderEff(){const el=$("eff"),J=lj(),td=today(),po=["Gardien","Défenseur","Milieu","Attaquant"].map(x=>`<option>${x}</option>`).join(""),cnt=DJ.map(d=>J.filter(p=>p.w&&p.w[d]).length);
+el.innerHTML=`<div class="cap" style="margin-bottom:12px"><b>Inscrire un joueur</b><div class="row3"><input id="ep" placeholder="Nom du joueur" aria-label="Nom du joueur"><select id="eq" aria-label="Poste">${po}</select><button data-a="add">Ajouter</button></div></div>
+<div class="cap" style="margin-bottom:12px"><b>Attribuer un programme à plusieurs joueurs</b><div class="row3"><select id="bd" aria-label="Jour">${DJ.map(d=>`<option>${d}</option>`).join("")}</select><select id="bp" aria-label="Programme">${popt("")}</select><select id="bt" aria-label="Cible"><option>Tout l’effectif</option>${po}</select><button data-a="bulk">Appliquer</button></div></div>
+<div class="cap"><div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px;margin-bottom:6px">${Object.keys(GC).map(k=>`<span><i style="display:inline-block;width:10px;height:10px;background:${GC[k]};border-radius:2px"></i> ${k}</span>`).join("")}</div>${J.length?`<table class="eff"><thead><tr><th>Joueur</th>${DJ.map((d,i)=>`<th${i==td?' style="outline:3px solid #C6F135"':""}>${d}${i==td?" •":""}</th>`).join("")}<th>Suivi</th><th></th></tr></thead><tbody>${J.map(p=>`<tr><td class="nmc">${esc(p.n)}<br><small>${esc(p.po)}</small></td>${DJ.map((d,i)=>{const v=p.w&&p.w[d]||"";return `<td style="border-left:5px solid ${v?(GC[grp(v)]||(/^Réhab/.test(grp(v))?"#D64550":"#8A929A")):"transparent"}"><select data-p="${p.id}" data-d="${i}" aria-label="${esc(p.n)} ${d}"><option value="">— repos —</option>${popt(v)}</select>${dmk(p,i,v)}</td>`}).join("")}<td>${sumP(p)}</td><td style="white-space:nowrap"><button class="g" data-a="code" data-p="${p.id}">Code</button> <button class="g" data-a="pp" data-p="${p.id}">Imprimer</button> <button class="g" data-a="del" data-p="${p.id}" aria-label="Supprimer">×</button></td></tr>`).join("")}</tbody><tfoot><tr><th>Séances / jour</th>${cnt.map(n=>`<th>${n} / ${J.length}</th>`).join("")}<th></th><th></th></tr></tfoot></table>`:"<p>Aucun joueur inscrit : ajoute ton effectif ci-dessus.</p>"}</div>
+<div class="cap" style="margin-top:12px"><b>Planning et suivi</b><div class="row3"><button data-a="pe">Imprimer le planning de la semaine</button><textarea id="ei" rows="2" aria-label="Code de suivi" placeholder="Colle ici un code de suivi envoyé par un joueur" style="font:inherit;font-size:12px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px"></textarea><button data-a="imps">Importer le suivi</button></div></div>
+<textarea id="ec" rows="2" aria-label="Code joueur" placeholder="Le code d’un joueur apparaît ici : envoie-le-lui par message" style="width:100%;margin-top:12px;font:inherit;font-size:12px;background:var(--pn);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px"></textarea>`}
+$("eff").onchange=ev=>{const t=ev.target;if(t.dataset.d==null)return;const J=lj(),p=J.find(x=>x.id==t.dataset.p);if(!p)return;p.w=p.w||{};p.w[DJ[+t.dataset.d]]=t.value;sj(J);renderEff()};
+$("eff").onclick=ev=>{const b=ev.target.closest("button");if(!b)return;const a=b.dataset.a,J=lj();
+if(a=="add"){const n=$("ep").value.trim();if(!n)return;J.push({id:Date.now(),n,po:$("eq").value,f:[],w:{}});sj(J);renderEff();toast(n+" ajouté")}
+if(a=="del"){sj(J.filter(x=>x.id!=b.dataset.p));renderEff()}
+if(a=="bulk"){const d=$("bd").value,v=$("bp").value,t=$("bt").value;J.forEach(p=>{if(t=="Tout l’effectif"||p.po==t){p.w=p.w||{};p.w[d]=v}});sj(J);renderEff();toast("Programme attribué le "+d)}
+if(a=="code"){const p=J.find(x=>x.id==b.dataset.p),f={};Object.values(p.w||{}).filter(Boolean).forEach(n=>{const s=getF(n);if(s)f[n]=s});const t=$("ec");t.value=btoa(unescape(encodeURIComponent(JSON.stringify({j:p.n,w:p.w||{},f}))));t.select();try{navigator.clipboard.writeText(t.value)}catch(e){}toast("Code de "+p.n+" généré")}
+if(a=="pe")pePlan();if(a=="pp")pePlayer(J.find(x=>x.id==b.dataset.p));
+if(a=="imps"){try{const o=JSON.parse(decodeURIComponent(escape(atob($("ei").value.trim())))),p=J.find(x=>x.n.toLowerCase()==(o.j||"").toLowerCase());if(!p||!o.l)throw 0;p.log=p.log||[];o.l.forEach(e=>{if(!p.log.some(z=>z.d==e.d&&z.n==e.n))p.log.push(e)});sj(J);renderEff();toast("Suivi de "+p.n+" importé")}catch(e){toast("Code de suivi invalide ou joueur inconnu")}}};
+function renderJr(){const el=$("jr"),m=lm();
+if(!m){el.innerHTML='<div class="cap"><h2>Mon espace joueur</h2><p>Colle le code envoyé par ton coach pour voir ton programme de la semaine.</p><textarea id="jc" rows="3" aria-label="Code du coach" style="width:100%;font:inherit;font-size:12px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px"></textarea><p><button data-a="imp">Importer mon code</button></p></div>';return}
+const td=today(),fl=Object.keys(m.f||{});
+el.innerHTML=`<h2>Bonjour ${esc(m.j||"")}</h2><div class="jg">${DJ.map((d,i)=>{const n=m.w&&m.w[d],f=n&&m.f[n];return `<div class="jc${i==td?" jt":""}"><b>${d}${i==td?" · aujourd’hui":""}</b><div class="jn">${n?esc(n):"Repos"}</div>${f?`<small>${f.sl.filter(c=>c.e>=0).length} exercices · ${esc(f.dur)}</small>${dn(n,i)?'<b style="color:#2E9E4F">✓ Faite</b>':`<button data-a="go" data-n="${esc(n)}">Démarrer</button>`+(i<=td?`<button class="g" data-a="mk" data-n="${esc(n)}" data-i="${i}">Marquer faite</button>`:"")}`:""}</div>`}).join("")}</div>${fl.length?`<h2>Toutes mes fiches</h2><div class="jg">${fl.map(n=>`<div class="jc"><div class="jn">${esc(n)}</div><button class="g" data-a="go" data-n="${esc(n)}">Démarrer</button></div>`).join("")}</div>`:""}<div class="cap" style="margin:12px 0"><b>Mon suivi de la semaine : ${wkDone(m)} séance(s) faite(s) / ${planned(m)} prévue(s)</b><p><button data-a="snd">Envoyer mon suivi au coach (code)</button></p><textarea id="jt" rows="2" aria-label="Code de suivi" style="width:100%;font:inherit;font-size:12px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px"></textarea></div><button class="g" data-a="reset">Changer de code</button>`}
+$("jr").onclick=ev=>{const b=ev.target.closest("button");if(!b)return;const a=b.dataset.a,m=lm();
+if(a=="imp"){try{const o=JSON.parse(decodeURIComponent(escape(atob($("jc").value.trim()))));if(!o.f)throw 0;localStorage.setItem(km,JSON.stringify({j:o.j||"",w:o.w||{},f:o.f}));renderJr();toast("Programme importé")}catch(e){toast("Code invalide")}}
+if(a=="reset"){try{localStorage.removeItem(km)}catch(e){}renderJr()}
+if(a=="mk"){logAdd(b.dataset.n,wd(+b.dataset.i));renderJr()}
+if(a=="snd"&&m){const t=$("jt");t.value=btoa(unescape(encodeURIComponent(JSON.stringify({j:m.j,l:lg().filter(x=>x.d>=wd(-21))}))));t.select();try{navigator.clipboard.writeText(t.value)}catch(e){}toast("Code de suivi généré : envoie-le à ton coach")}
+if(a=="go"&&m&&m.f[b.dataset.n]){S=JSON.parse(JSON.stringify(m.f[b.dataset.n]));SX.nx=b.dataset.n;$("sxo").click()}};
+function setV(v){$("wr").style.display=v=="f"?"":"none";$("eff").hidden=v!="e";$("jr").hidden=v!="j";$("hb").style.display=v=="f"?"flex":"none";
+[["tf","f"],["te","e"],["tj","j"]].forEach(a=>{$(a[0]).className=a[1]==v?"":"g"});if(v=="e")renderEff();if(v=="j")renderJr();$("bkw").hidden=v=="f";try{refBk()}catch(e){}try{localStorage.setItem("circuit-vue",v)}catch(e){}}
+$("tf").onclick=()=>setV("f");$("te").onclick=()=>setV("e");$("tj").onclick=()=>setV("j");
+{let v0="f";try{v0=localStorage.getItem("circuit-vue")||"f"}catch(e){}if(location.hash=="#joueur"){v0="j";$("tf").hidden=true;$("te").hidden=true;$("tj").textContent="Mon espace"}setV(v0)}
+document.body.insertAdjacentHTML("beforeend",'<div id="pe" class="pe"></div>');
+const dstr=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"),wd=i=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7)+i);return dstr(d)},KL="circuit-suivi",lg=()=>{try{return JSON.parse(localStorage.getItem(KL))||[]}catch(e){return[]}},sgl=a=>{try{localStorage.setItem(KL,JSON.stringify(a))}catch(e){}};
+function logAdd(n,d){d=d||dstr(new Date());const L=lg();if(!L.some(x=>x.d==d&&x.n==n)){L.push({d,n});sgl(L)}toast("Séance enregistrée ✓")}
+const dn=(n,i)=>lg().some(x=>x.d==wd(i)&&x.n==n),isd=(p,i,v)=>(p.log||[]).some(x=>x.d==wd(i)&&x.n==v),dmk=(p,i,v)=>v&&isd(p,i,v)?' <b title="Séance faite" style="color:#2E9E4F">✓</b>':"",
+sumP=p=>{let pl=0,fa=0;DJ.forEach((d,i)=>{const v=p.w&&p.w[d];if(v){pl++;if(isd(p,i,v))fa++}});return pl?fa+" / "+pl:"–"},planned=m=>DJ.filter(d=>m.w&&m.w[d]).length,wkDone=m=>DJ.filter((d,i)=>m.w&&m.w[d]&&dn(m.w[d],i)).length;
+function prn(h){$("pe").innerHTML=h;document.body.classList.add("pe");try{window.print()}catch(e){}document.body.classList.remove("pe")}
+addEventListener("afterprint",()=>document.body.classList.remove("pe"));
+function pePlan(){const J=lj();prn(`<h1>${esc(S.club||"")} Planning de la semaine</h1><p>Semaine du ${wd(0)} au ${wd(6)} · ✓ = séance faite</p><table class="pt"><thead><tr><th>Joueur</th>${DJ.map(d=>`<th>${d}</th>`).join("")}<th>Suivi</th></tr></thead><tbody>${J.map(p=>`<tr><td><b>${esc(p.n)}</b><br>${esc(p.po)}</td>${DJ.map((d,i)=>{const v=p.w&&p.w[d];return `<td>${v?esc(v)+(isd(p,i,v)?" ✓":""):"–"}</td>`}).join("")}<td>${sumP(p)}</td></tr>`).join("")}</tbody></table>`)}
+function pePlayer(p){if(!p)return;prn(`<h1>${esc(p.n)} · ${esc(p.po)}</h1><p>Programme de la semaine du ${wd(0)}</p><div class="pg">${DJ.map((d,i)=>{const v=p.w&&p.w[d],f=v&&getF(v);return `<div class="pd"><b>${d}</b>${f?`<div><b>${esc(v)}</b></div><small>${esc(f.dur)}</small><ol>${f.sl.filter(c=>c.e>=0).map(c=>{const x=E[c.e];return `<li>${esc(x[1])} – ${c.s} × ${c.v} ${U[x[3]].l}${SD[x[4]]}</li>`}).join("")}</ol>`:"<div>Repos</div>"}</div>`}).join("")}</div>`)}
+const SRC={},ntOf=q=>q[5]?q[5]+" Sources : "+(SRC[q[4]]||"")+" À valider par le médecin ou le kiné.":"",rh=(g,s,L)=>{SRC[g]=s;L.forEach(a=>PRG.push([a[0],a[1],a[2],a[3],g,a[4]]))};
+rh("Réhab – Tendinite rotulienne","Malliaras 2015 (JOSPT) ; Rio 2015 (BJSM) ; Kongsgaard 2009 ; essai JUMPER.",[
+["Rotulien P1 – Isométrie (calmer la douleur)","Charge isométrique à mi-amplitude","7 min",[["Squat isométrique au mur",45,4],["Fente isométrique (maintien bas)",30,3],["Pont fessier isométrique",30,3],["Planche avant-bras",30,2]],"Isométrie à mi-amplitude (genou 30–60°, ex. 5 × 45 s à ~70 % de la force max). Passage : douleur acceptable au squat unipodal, seuil fixé par le kiné."],
+["Rotulien P2 – Charge lente et lourde (HSR)","Montée en charge : 3 s montée / 3 s descente","9 min",[["Squat goblet avec haltère",10,3],["Squat bulgare (split squat)",8,3],["Squat unipodal vers banc",8,3],["Step-up avec haltère",8,3],["Pont fessier unipodal",10,2]],"Force lente 3 s montée / 3 s descente, charge progressive (70–85 % du max). L’haltère de 8 kg est un départ : à augmenter avec le kiné. Réaction calme à 24 h."],
+["Rotulien P3 – Énergie élastique (plyométrie)","Réintroduire réceptions et sauts","8 min",[["Réception de saut stabilisée",5,3],["Sauts pogo",20,3],["Squat jump",6,3],["Squat bulgare (split squat)",8,2],["Fente arrière avec haltère",8,2]],"Plyométrie après tolérance à la charge lourde : réceptions, petits rebonds puis sauts. Surveiller la douleur et la réaction à 24 h."],
+["Rotulien P4 – Retour au sport","Gestes spécifiques et vitesse","9 min",[["Squat jump avec mini band",6,3],["Fente sautée alternée",6,3],["Saut sur step",5,3],["Bondissements alternés (bounding)",10,2],["Sauts patineur",8,2]],"Retour guidé par le score VISA-P, les tests de force et les gestes du sport sans douleur ; entraînement spécifique tous les 2–3 jours, isométrie les autres jours."]]);
+rh("Réhab – Pubalgie (adducteurs)","Hölmich 1999 ; Serner 2020 (Aspetar) ; Vergani 2022 (Delphi).",[
+["Pubalgie P1 – Isométrie et glissés (Hölmich 1)","Adducteurs en douceur, sans étirement passif","7 min",[["Squeeze adducteurs",10,3],["Glissé d’adducteur",8,2],["Pont fessier + squeeze",10,2],["Dead bug",8,2]],"Hölmich module 1 (8–12 sem., 3×/sem.) : adducteurs isométriques, glissés, tronc ; pas d’étirement passif. Passage : adduction isométrique sans douleur."],
+["Pubalgie P2 – Résistance et stabilité (Hölmich 2)","Adducteurs, abducteurs, tronc","8 min",[["Fente latérale mini band",8,2],["Marche latérale mini band",10,2],["Planche latérale",25,2],["Équilibre unipodal sur bosu",30,2],["Dead bug avec haltère",8,2]],"Résistance élastique, abducteurs, tronc, équilibre unipodal. Course vers la 6e semaine dans l’essai de Hölmich ; gestes quotidiens sans douleur à l’aine."],
+["Pubalgie P3 – Charge élevée (Copenhague)","Excentrique à haute charge, fin de rééducation","8 min",[["Copenhagen plank court",20,3],["Fente latérale lente (excentrique)",8,3],["Fente latérale (cossack)",8,2],["Planche latérale + élévation",8,2],["Squat bulgare (split squat)",8,2]],"Copenhague en fin de rééducation (levier court puis long). Critères course : palpation, adduction isométrique, Copenhague ×10 et sprints 10×30 m à 100 % sans douleur."],
+["Pubalgie P4 – Course et changements de direction","Vitesse et appuis avant la reprise collective","8 min",[["Sauts patineur",8,3],["Sauts latéraux unipodaux",8,3],["Bondissements alternés (bounding)",10,2],["Fente sautée alternée",6,2],["Copenhagen plank court",25,2]],"Critères de retour : force (isométrique, excentrique), tests de changements de direction prévus et non prévus, gestes spécifiques ; plusieurs séances d’équipe sans douleur."]]);
+rh("Réhab – Tendinopathie d’Achille","Silbernagel 2007 et 2015 (JOSPT) ; Griffin 2021 (BMC MSK).",[
+["Achille P1 – Isométrie et douleur (≤ 5/10)","Modèle de surveillance de la douleur","6 min",[["Maintien sur pointes (isométrique)",30,3],["Montées sur pointes genoux fléchis",12,3],["Équilibre unipodal jambe libre active",30,2]],"Modèle de douleur : ≤ 5/10 pendant et après, calme le lendemain, raideur matinale stable. Passage : 10–15 montées bipodales contrôlées. Insertion : ne pas descendre sous le sol."],
+["Achille P2 – Renforcement lent (excentrique)","Montées et descentes lentes, charge croissante","7 min",[["Montées sur pointes genoux fléchis",15,3],["Montées sur pointes talon dans le vide",10,3],["Descente excentrique d’Achille",15,3],["Marche sur pointes",12,2]],"Montées/descentes lentes sur marche (excentrique 3 × 15). Passage : montées unipodales sans réaction ; progression selon douleur et force."],
+["Achille P3 – Charge lourde et rebonds","Force lourde puis rebonds rapides","8 min",[["Montées sur pointes avec haltère",10,3],["Descente excentrique d’Achille",15,3],["Sauts pogo",20,3],["Squat bulgare (split squat)",8,2]],"Charge plus lourde 2–3×/sem. + rebonds rapides (3 × 20) ; objectifs de force et de force réactive pour progresser."],
+["Achille P4 – Retour au sport","Énergie élastique et gestes de jeu","8 min",[["Sauts pogo",20,3],["Squat jump",6,3],["Saut sur step",5,2],["Bondissements alternés (bounding)",10,2],["Montées sur pointes avec haltère",10,2]],"Phase finale (semaine 12 à 6 mois) : plyométrie et gestes de jeu, charge lourde en entretien ; reprise collective si tolérance sans douleur à 24 h."]]);
+rh("Réhab – Essuie-glace (bandelette ilio-tibiale)","Fredericson 2000 ; Mass General Brigham ; Physiotutors.",[
+["Essuie-glace P1 – Calmer et activer","Charge réduite et activation des fessiers","6 min",[["Clamshell mini band",12,2],["Abduction allongé mini band",12,2],["Pont fessier unipodal",8,2],["Équilibre unipodal yeux fermés",30,2]],"Réduire les charges provocatrices ; activation douce abducteurs/extenseurs. Passage : descente d’escalier sans douleur et mobilité complète du genou."],
+["Essuie-glace P2 – Force des abducteurs (HSR)","Renforcement lent et lourd","8 min",[["Fire hydrant mini band",12,3],["Monster walk mini band",10,3],["Fente latérale mini band",8,3],["Squat bulgare (split squat)",8,3],["Pont fessier unipodal",10,3]],"Force lente et lourde 3×/sem. jusqu’à la reprise de course ; Fredericson : 22 athlètes sur 24 couraient sans douleur après 6 semaines de renfort du moyen fessier."],
+["Essuie-glace P3 – Contrôle et plyométrie","Alignement du genou et énergie élastique","8 min",[["Step-down sur banc",8,3],["Squat unipodal vers banc",8,3],["Planche latérale",30,2],["Réception de saut stabilisée",5,3],["Sauts pogo",20,2]],"Contrôle de l’alignement (adduction de hanche, chute du bassin) puis plyométrie ; critères : poids du corps toléré, sauts unipodaux sans douleur."],
+["Essuie-glace P4 – Reprise de la course","Entretien de force pendant la course progressive","7 min",[["Pont fessier unipodal",10,2],["Fente latérale mini band",8,2],["Squat bulgare (split squat)",8,2],["Planche latérale + élévation",8,2]],"Course graduée (marche-course, cadence +5–10 %), renfort maintenu 2–3×/sem. ; côtes et terrain varié en dernier."]]);
+rh("Réhab – Ischios (post-déchirure)","Whiteley, van Dyk et al. (Aspetar 2019) ; Askling 2013 et 2014.",[
+["Ischios P1 – Protection et charge précoce","Reprise sans douleur de la charge","6 min",[["Pont fessier isométrique",30,3],["Pont fessier talons sur banc",10,2],["Curl ischios mini band",10,2],["Équilibre unipodal yeux fermés",30,2]],"Progression par critères objectifs, pas par le temps ; exercice douloureux adapté ou arrêté. Passage : pont et squat unipodaux sans douleur, amplitude/force proches du côté sain."],
+["Ischios P2 – Renfort en allongement (L-protocol)","Charger les ischios à grande longueur","8 min",[["Good morning avec haltère",10,3],["Soulevé de terre roumain 1 jambe",8,3],["Pont fessier unipodal",10,3],["Curl ischios mini band",12,3]],"Inspiré du L-protocol : exercices à grande longueur musculaire ; retour environ 28 j contre 51 j (Askling 2013, footballeurs d’élite). Progresser par paliers de douleur."],
+["Ischios P3 – Excentrique et vitesse","Nordic et préparation à la course rapide","8 min",[["Nordic assisté",5,3],["Soulevé de terre roumain 1 jambe",8,3],["Mountain climbers",20,2],["Curl ischios mini band",12,2],["Pont fessier unipodal",12,3]],"Nordic introduit quand l’excentrique est toléré ; reprise précoce mais sûre de la course rapide et des changements de direction."],
+["Ischios P4 – Retour au sport (tests)","Sprint, sauts et gestes de match","8 min",[["Nordic assisté",6,3],["Squat jump",6,2],["Fente sautée alternée",6,2],["Bondissements alternés (bounding)",10,2],["Sauts patineur",8,2]],"Tests de retour : H-test d’Askling, Nordic, force isocinétique. Cohorte Aspetar (grades I–II) : ≈ 23 j (15–31), récidive 6 %. Décision partagée médecin/kiné/coach."]]);
+rh("Réhab – Quadriceps (post-déchirure)","González-de-la-Flor 2024 ; Hlibocianu 2025 ; e3rehab ; Ekstrand 2011.",[
+["Quadriceps P1 – Protection et mobilité","Récupérer amplitude et contrôle","6 min",[["Squat isométrique au mur",30,3],["Pont fessier unipodal",8,2],["Étirement actif des fléchisseurs",20,2],["Équilibre unipodal yeux fermés",30,2]],"Charger hanche et genou à longueur moyenne puis longue ; passage selon douleur, amplitude du genou et force des fléchisseurs de hanche."],
+["Quadriceps P2 – Renfort à grande longueur","Fentes et excentrique","8 min",[["Squat bulgare (split squat)",8,3],["Fente arrière avec haltère",8,3],["Squat unipodal vers banc",8,3],["Relevé de genoux assis sur banc",12,3],["Step-down sur banc",8,2]],"Rectus femoris : flexion de hanche + extension de genou, excentrique recommandé. Passage : squat unipodal et course lente sans douleur."],
+["Quadriceps P3 – Course et frappe","Vitesse, sauts et gestes de jeu","8 min",[["Fente marchée avec haltère",10,3],["Montées de genoux rapides",20,3],["Squat jump",6,2],["Saut en longueur sur place",5,2],["Bondissements alternés (bounding)",10,2]],"Course : volume avant vitesse, puis accélérations et frappes ; tests de sauts et de force symétriques. Les lésions du quadriceps récidivent plus que ischios/aine."]]);
+rh("Réhab – Périostite (MTSS)","George 2024 (Sports Med) ; Physiotutors ; Sanford 2024.",[
+["Périostite P1 – Décharge et renforcement","Réduire l’impact, renforcer le bas de jambe","6 min",[["Montées sur pointes genoux fléchis",12,3],["Relevés de pointes de pied",15,3],["Pont fessier unipodal",8,2],["Planche avant-bras",30,2]],"Réduire l’impact (vélo, natation), renforcer mollet, tibial, fessiers, tronc. Douleur sur > 5 cm du bord tibial ; sinon penser à une fracture de stress."],
+["Périostite P2 – Force et impact léger","Charge musculaire avant l’impact","8 min",[["Montées sur pointes avec haltère",12,3],["Marche sur pointes",12,2],["Marche sur talons",12,2],["Squat bulgare (split squat)",8,2],["Step-up avec haltère",8,2]],"Force avant impact. Course quand : plus de douleur osseuse, marche indolore, tests de charge/sauts sans douleur ; reprise < 50 % du volume antérieur."],
+["Périostite P3 – Impact progressif","Réceptions, rebonds et reprise de course","7 min",[["Réception de saut stabilisée",5,3],["Sauts pogo",20,2],["Squat jump",6,2],["Montées sur pointes talon dans le vide",12,2]],"Marche-course, distance avant vitesse ; recul si douleur. Retour moyen ≈ 7–8 sem. (4–12) pour une périostite à faible risque."]]);
+rh("Réhab – Contracture / lésion du mollet","Physio-network ; Sports Injury Clinic (Pask) ; Playbook.",[
+["Mollet P1 – Charge précoce","Réactiver sans provoquer de douleur","6 min",[["Montées sur pointes genoux fléchis",12,3],["Maintien sur pointes (isométrique)",30,3],["Marche sur pointes",12,2],["Équilibre unipodal jambe libre active",30,2]],"Charge précoce sans douleur plutôt que repos ; genou tendu = gastrocnémien, genou fléchi = soléaire. Passage : marche indolore, montées contrôlées."],
+["Mollet P2 – Force lente","Excentrique lent de 3 à 4 s","8 min",[["Montées sur pointes avec haltère",10,3],["Montées sur pointes genoux fléchis",15,3],["Descente excentrique d’Achille",12,3],["Squat bulgare (split squat)",8,2]],"Descentes lentes 3–4 s ; passage : 5 montées unipodales avec ≥ 80 % du poids du corps, puis force symétrique à 90–95 %."],
+["Mollet P3 – Rebonds et course","Vitesse de charge puis reprise","8 min",[["Sauts pogo",20,3],["Pas alternés rapides sur step",20,2],["Montées sur pointes talon dans le vide",12,2],["Squat jump",6,2],["Montées de genoux rapides",20,2]],"Course : volume avant vitesse ; sauts avec < 10 % d’écart entre les jambes. Le déficit du mollet peut durer 4–6 mois : continuer le renfort."]]);
+rh("Réhab – Sciatique (avis médical obligatoire)","NICE 2016 ; Pure Physiotherapy ; repères Medpoint.",[
+["Sciatique P1 – Rester actif (douleur ≤ 4/10)","Mouvements doux sans irriter le nerf","5 min",[["Bird dog",6,2],["Dead bug",6,2],["Pont fessier isométrique",20,2]],"Éviter le repos au lit, rester actif, douleur ≤ 4/10. URGENCE : troubles urinaires/intestinaux, engourdissement de la selle, faiblesse de jambe qui s’aggrave."],
+["Sciatique P2 – Gainage et stabilité","Renforcer le tronc quand la douleur se calme","7 min",[["Planche avant-bras",20,3],["Planche latérale",20,2],["Bird dog",8,3],["Dead bug avec haltère",8,2],["Pont fessier unipodal",8,2]],"Phase de renfort (≈ semaines 3–6) : gainage et retour progressif aux activités ; les symptômes neurologiques doivent régresser."],
+["Sciatique P3 – Force et technique de levage","Reprise de la force avec un bon geste","8 min",[["Squat goblet avec haltère",8,2],["Pont fessier mini band",12,2],["Fente arrière avec haltère",8,2],["Marche valise (suitcase carry)",12,2],["Planche latérale + élévation",6,2]],"Retour au sport si : plus de douleur au quotidien, symptômes neurologiques disparus, tronc fort, test de Lasègue négatif, bon geste de levage."]]);
+const BK=["circuit-fiche","circuit-fiches","circuit-joueurs","circuit-suivi","circuit-moi"],KE="circuit-lastexp";
+const bkAll=()=>{const d={};BK.forEach(k=>{try{const v=localStorage.getItem(k);if(v!=null)d[k]=JSON.parse(v)}catch(e){}});return{app:"circuit-renforcement",v:1,date:new Date().toISOString(),data:d}};
+const bkCount=()=>{const b=bkAll().data;return{j:(b["circuit-joueurs"]||[]).length,f:Object.keys(b["circuit-fiches"]||{}).length,s:(b["circuit-suivi"]||[]).length}};
+function bkApply(o,mode){if(!o||o.app!="circuit-renforcement"||!o.data)throw 0;const d=o.data;
+if(mode=="rep"){BK.forEach(k=>{try{if(d[k]!=null)localStorage.setItem(k,JSON.stringify(d[k]));else localStorage.removeItem(k)}catch(e){}});try{const f=JSON.parse(localStorage.getItem("circuit-fiche"));if(f&&Array.isArray(f.sl)&&f.sl.length==6)S=f}catch(e){}}
+else{const J=lj();(d["circuit-joueurs"]||[]).forEach(p=>{const q=J.find(x=>x.n.toLowerCase()==p.n.toLowerCase());if(!q)J.push(p);else{q.w=Object.assign({},p.w,q.w);q.log=[...(q.log||[])];(p.log||[]).forEach(e=>{if(!q.log.some(z=>z.d==e.d&&z.n==e.n))q.log.push(e)})}});sj(J);
+svd(Object.assign({},d["circuit-fiches"]||{},ld()));const L=lg();(d["circuit-suivi"]||[]).forEach(e=>{if(!L.some(z=>z.d==e.d&&z.n==e.n))L.push(e)});sgl(L);
+if(d["circuit-moi"]&&!lm()){try{localStorage.setItem("circuit-moi",JSON.stringify(d["circuit-moi"]))}catch(e){}}}}
+function refBk(){const e=$("bkw");if(!e)return;e.innerHTML="";e.appendChild(bkp())}
+function bkp(){const w=document.createElement("div"),c=bkCount();let le=null;try{le=localStorage.getItem(KE)}catch(e){}
+w.className="cap";w.style.marginTop="12px";
+w.innerHTML=`<b>Sauvegarde et export</b><p style="margin:4px 0 8px;font-size:14px;color:var(--mu)">${c.j} joueur(s) · ${c.f} fiche(s) enregistrée(s) · ${c.s} séance(s) suivie(s). Dernière sauvegarde : ${le?new Date(le).toLocaleDateString("fr-FR"):"jamais"}. Les données restent dans ce navigateur : exporte-les régulièrement.</p>`;
+const mk=(t,f,cl)=>{const e=document.createElement("button");e.textContent=t;if(cl)e.className=cl;e.onclick=f;return e},mark=()=>{try{localStorage.setItem(KE,new Date().toISOString())}catch(e){}};
+const ta=document.createElement("textarea");ta.rows=3;ta.setAttribute("aria-label","Sauvegarde au format texte");ta.placeholder="Sauvegarde en texte : copie-la ici, ou colle une sauvegarde à importer";ta.style.cssText="width:100%;font:inherit;font-size:12px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:8px;padding:6px;margin-top:8px";
+const fi=document.createElement("input");fi.type="file";fi.accept=".json,application/json";fi.setAttribute("aria-label","Fichier de sauvegarde");fi.style.marginTop="8px";
+fi.onchange=()=>{const f=fi.files&&fi.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{ta.value=r.result;toast("Fichier chargé : choisis Fusionner ou Remplacer")};r.readAsText(f)};
+const imp=mode=>()=>{try{bkApply(JSON.parse(ta.value.trim()),mode);panel();render();renderEff();renderJr();refBk();toast(mode=="rep"?"Sauvegarde importée : données remplacées":"Sauvegarde importée : données fusionnées")}catch(e){toast("Sauvegarde invalide")}};
+const r1=document.createElement("div"),r2=document.createElement("div");r1.className=r2.className="row3";
+r1.append(mk("Exporter un fichier",async()=>{const t=JSON.stringify(bkAll(),null,1),fn="sauvegarde-circuit-"+dstr(new Date())+".json";let ok=false;try{const dl=window.claude&&await window.claude.use("downloads");if(dl){await dl.save({filename:fn,data:t});ok=true}}catch(e){if(e&&e.code=="declined")return}if(!ok){try{const l=document.createElement("a");l.href=URL.createObjectURL(new Blob([t],{type:"application/json"}));l.download=fn;document.body.appendChild(l);l.click();l.remove();ok=true}catch(e){}}ta.value=t;if(ok){mark();toast("Sauvegarde exportée")}else toast("Export de fichier indisponible ici : copie le texte ci-dessous")}),mk("Copier en texte",()=>{ta.value=JSON.stringify(bkAll());ta.select();try{navigator.clipboard.writeText(ta.value)}catch(e){}mark();toast("Sauvegarde copiée : colle-la dans un message ou un fichier")},"g"));
+let arm=0;const rep=mk("Remplacer toutes les données",()=>{if(!arm){arm=1;rep.textContent="Confirmer : tout sera remplacé";setTimeout(()=>{arm=0;rep.textContent="Remplacer toutes les données"},5000);return}arm=0;imp("rep")()},"g");
+r2.append(mk("Fusionner avec les données actuelles",imp("mer"),"g"),rep);
+const lb=document.createElement("small");lb.textContent="Importer : choisis un fichier de sauvegarde, ou colle son contenu ci-dessus.";lb.style.cssText="display:block;margin-top:8px;color:var(--mu)";
+w.append(r1,ta,lb,fi,r2);return w}
+try{refBk()}catch(e){}
+setTimeout(()=>{const c=bkCount();let le=null;try{le=localStorage.getItem(KE)}catch(e){}if(c.j+c.f+c.s>0&&(!le||Date.now()-new Date(le)>14*864e5))toast("Pense à sauvegarder tes données : bouton « Exporter ».")},2500);
+function chip(l,v){return `<div><i>${l}</i><b>${esc(v)}</b></div>`}
+function render(){
+const n=S.sl.filter(c=>c.e>=0).length;
+$("sheet").innerHTML=`<div class="sh"><div><div class="k">R1 · Prévention blessures</div><h1>${esc(S.t)}</h1><div class="s">${esc(S.p)}</div></div>
+<div class="ch">${chip("Durée",S.dur)}${chip("Récupération",S.rec)}${chip("Moment",S.qd)}${chip("Exercices",n+" exercice"+(n>1?"s":""))}</div></div>
+${(()=>{const act=[0,1,2,3,4,5].filter(i=>S.sl[i].e>=0),m=act.length,SP=[[6],[6],[3,3],[2,2,2],[3,3,3,3],[2,2,2,3,3],[2,2,2,2,2,2]][m],K=[1,1.7,1.5,1.3,1.25,1,1][m];return `<div class="gr" style="--k:${K};grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(${m>3?2:1},1fr)">${m?act.map((i,j)=>card(i,j,SP[j])).join(""):'<div class="cd empty" style="grid-column:span 6">Choisis au moins un exercice</div>'}</div>`})()}
+<div class="sf"><div${S.nt?' style="font-size:12px;line-height:1.25"':""}>${S.nt?"<b>Protocole de réhabilitation</b> · "+esc(S.nt):"<b>Qualité avant quantité</b> · Douleur aiguë : on arrête et on prévient le staff · Exercices unipodaux : des deux côtés"}</div><em>${esc(S.club)}</em></div>`;
+try{localStorage.setItem("circuit-fiche",JSON.stringify(S))}catch(e){}}
+function fit(){
+const w=$("pv").clientWidth,k=Math.min(1,w/1123);
+$("sheet").style.transform=`scale(${k})`;$("stage").style.width=1123*k+"px";$("stage").style.height=794*k+"px"}
+$("rst").onclick=()=>{S=def();panel();render()};
+$("prt").onclick=()=>{try{window.print()}catch(e){}};
+panel();render();fit();
+if(window.ResizeObserver)new ResizeObserver(fit).observe($("pv"));else addEventListener("resize",fit);
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")==0)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js").catch(()=>{}));
+</script>
+</body>
+</html>
